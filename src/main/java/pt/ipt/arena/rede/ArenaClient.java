@@ -1,7 +1,11 @@
 package pt.ipt.arena.rede;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import pt.ipt.arena.modelo.Acao;
+import pt.ipt.arena.modelo.Percecao;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -35,6 +39,9 @@ public class ArenaClient {
 
     /** Timeout por pedido. Margem alta para tolerar o jitter da rede Wi-Fi. */
     private static final Duration TIMEOUT_PEDIDO = Duration.ofSeconds(20);
+
+    /** Instância reutilizável do Gson para (de)serialização JSON. */
+    private static final Gson GSON = new Gson();
 
     private final HttpClient http;
     private final String codigoSala;
@@ -88,9 +95,52 @@ public class ArenaClient {
         return enviarEParsear(pedido, "percecionar");
     }
 
-    // TODO (etapa: acao)  POST /arena/action            -> submeter MOVER_NORTE/SUL/ESTE/OESTE.
-    // TODO (etapa: RAG)    POST /arena/{room_id}/unlock  -> submeter a chave extraida.
-    // TODO (etapa: RAG)    GET  /arena/{room_id}/download_manual -> obter o manual tecnico.
+    /**
+     * Igual a {@link #percecionar()} mas devolve a telemetria já mapeada para o
+     * modelo tipado {@link Percecao} (via Gson). Devolve {@code null} se a
+     * chamada falhar ou se o JSON não puder ser convertido.
+     */
+    public Percecao percecionarTipado() {
+        JsonObject json = percecionar();
+        if (json == null) {
+            return null;
+        }
+        try {
+            return GSON.fromJson(json, Percecao.class);
+        } catch (RuntimeException e) {
+            System.err.println("[ArenaClient] Não foi possível mapear a telemetria: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * POST /arena/action  (body {@code {room_id, robot_id, action}}).
+     *
+     * Submete uma ação motora. Devolve a resposta do servidor (sucesso /
+     * bloqueado / eliminado) ou {@code null} em caso de falha de rede.
+     */
+    public JsonObject agir(Acao acao) {
+        return agir(acao.getComando());
+    }
+
+    public JsonObject agir(String comando) {
+        JsonObject corpo = new JsonObject();
+        corpo.addProperty("room_id", codigoSala);
+        corpo.addProperty("robot_id", idRobo);
+        corpo.addProperty("action", comando);
+
+        HttpRequest pedido = HttpRequest.newBuilder(URI.create(URL_BASE + "/arena/action"))
+                .timeout(TIMEOUT_PEDIDO)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(corpo.toString(), StandardCharsets.UTF_8))
+                .build();
+
+        return enviarEParsear(pedido, "agir");
+    }
+
+    // TODO (etapa: RAG)  POST /arena/{room_id}/unlock  -> submeter a chave extraida.
+    // TODO (etapa: RAG)  GET  /arena/{room_id}/download_manual -> obter o manual tecnico.
 
     /**
      * Envia o pedido e converte o corpo da resposta num {@link JsonObject}.
