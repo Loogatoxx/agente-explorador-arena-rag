@@ -3,7 +3,10 @@ package pt.ipt.arena;
 import com.google.gson.JsonObject;
 
 import pt.ipt.arena.heuristica.MotorHeuristico;
+import pt.ipt.arena.ia.OllamaClient;
+import pt.ipt.arena.ia.PipelineRag;
 import pt.ipt.arena.modelo.Acao;
+import pt.ipt.arena.modelo.Cofre;
 import pt.ipt.arena.modelo.Percecao;
 import pt.ipt.arena.rede.ArenaClient;
 
@@ -33,10 +36,16 @@ public class AgenteExplorador {
 
         ArenaClient arena = new ArenaClient(sala, idRobo);
         MotorHeuristico motor = new MotorHeuristico(idRobo);
+        OllamaClient ollama = new OllamaClient();
+        PipelineRag pipeline = new PipelineRag(arena, ollama);
 
         System.out.println("[Agente] A registar '" + idRobo + "' na sala '" + sala + "'...");
         JsonObject registo = arena.registar();
         System.out.println("[Agente] Resposta do registo: " + registo);
+
+        // Pré-carrega e indexa o manual técnico para o pipeline RAG (best-effort).
+        System.out.println("[Agente] A indexar o manual técnico (RAG)...");
+        System.out.println("[Agente] Manual indexado: " + pipeline.indexarManual());
 
         // Ciclo de vida Sense-Think-Act.
         while (true) {
@@ -54,11 +63,12 @@ public class AgenteExplorador {
                 } else if (!percecao.isGameStarted()) {
                     // Jogo ainda não começou: estado de espera (lobby).
                     System.out.println("[Agente] Em espera no lobby (game_started=false)...");
+                } else if (percecao.getCofreSobOAgente() != null) {
+                    // ---------- RAG: cofre sob o agente -> resolver e desbloquear ----------
+                    resolverCofre(percecao.getCofreSobOAgente(), pipeline, motor);
                 } else {
-                    // ---------- THINK (Decisão) ----------
+                    // ---------- THINK (Decisão) + ACT (Ação): navegação heurística ----------
                     Acao acao = motor.decidir(percecao);
-
-                    // ---------- ACT (Ação) ----------
                     JsonObject resposta = arena.agir(acao);
                     System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
                 }
@@ -72,6 +82,28 @@ public class AgenteExplorador {
         }
 
         System.out.println("[Agente] Terminado.");
+    }
+
+    /**
+     * Trata um cofre sob o agente: garante o manual indexado, resolve o enigma
+     * via RAG e submete a chave. Em caso de falha, marca o cofre na lista negra
+     * para o motor heurístico forçar uma fuga no turno seguinte.
+     */
+    private static void resolverCofre(Cofre cofre, PipelineRag pipeline, MotorHeuristico motor) {
+        if (!pipeline.estaIndexado()) {
+            pipeline.indexarManual();
+        }
+        System.out.println("[Agente] Cofre sob o agente. A resolver via RAG: " + cofre.getTerminalDesafio());
+        JsonObject resposta = pipeline.tentarDesbloquear(cofre);
+        System.out.println("[Agente] Resultado do unlock: " + resposta);
+
+        boolean sucesso = resposta != null
+                && resposta.has("status")
+                && "sucesso".equalsIgnoreCase(resposta.get("status").getAsString());
+        if (!sucesso) {
+            motor.marcarCofreFalhado(cofre.getPosicao());
+            System.out.println("[Agente] Cofre marcado na lista negra (RAG falhou).");
+        }
     }
 
     /** Pausa o ciclo, preservando corretamente o estado de interrupção. */
