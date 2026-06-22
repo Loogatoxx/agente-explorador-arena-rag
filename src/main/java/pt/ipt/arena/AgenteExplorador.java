@@ -32,7 +32,7 @@ public class AgenteExplorador {
         String idRobo = (args.length > 1) ? args[1] : "grupoE_alfa";
 
         ArenaClient arena = new ArenaClient(sala, idRobo);
-        MotorHeuristico motor = new MotorHeuristico();
+        MotorHeuristico motor = new MotorHeuristico(idRobo);
 
         System.out.println("[Agente] A registar '" + idRobo + "' na sala '" + sala + "'...");
         JsonObject registo = arena.registar();
