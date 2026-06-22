@@ -364,3 +364,42 @@
 ### Dificuldades / Alterações / Abandonos
 - Nada abandonado. Para validar sem depender de um ecrã, optou-se por renderizar
   o painel diretamente para uma imagem (`BufferedImage`) em vez de abrir janela.
+
+---
+
+## 2026-06-22 — Etapa 10: Otimização da navegação (com benchmark)
+*(Prompt pensado pelo Carlos — "modo ultracode": otimizar tudo para ganhar.)*
+
+### O que foi feito
+- **Mapa acumulado** (`MapaDescoberto`): junta paredes/recursos/cofres vistos ao
+  longo dos turnos (deixa de "esquecer" alvos fora do radar de 4.5).
+- **Pathfinding BFS** (`Pathfinder`): primeiro passo do caminho mais curto até ao
+  alvo, contornando paredes conhecidas (otimista nas zonas por explorar).
+- Novos avaliadores: `AvaliadorAlvo` (vai ao alvo alcançável mais próximo por
+  caminho real, não por linha reta) e `AvaliadorExploracao` (vai à fronteira não
+  visitada mais próxima — cobre o mapa sem oscilar).
+- **Aprender com movimentos bloqueados**: se a posição não muda, a célula-destino
+  é memorizada como parede (resolve os limites do mapa, que não vêm em
+  `objetos_fixos`, e qualquer "bloqueado" do servidor). Exceções: cofres e rivais.
+- Motor **otimizado por omissão**; mantida a `MotorHeuristico.classico()` para o
+  benchmark A/B.
+- **Simulador da Arena** (`SimuladorArena`: labirinto determinista, radar 4.5 com
+  oclusão por linha de visão, bordo de paredes) + **benchmark** (`BenchmarkNavegacao`)
+  e teste de regressão (`BenchmarkNavegacaoTest`).
+
+### Resultado medido (30 labirintos 24×24, HP não-limitante)
+| Métrica | Clássico (guloso) | Otimizado |
+|---|---|---|
+| Cenários resolvidos | **6/30** | **29/30** |
+| Turnos médios (nos 6 que ambos resolvem) | 186,0 | **148,7** (~−20%) |
+| Score global (menor = melhor) | 73 116 | **9 746** (**−86,7%**) |
+
+### Decisões e justificações
+- No benchmark de navegação, HP é não-limitante para **isolar** a eficiência de
+  navegação da gestão de bateria (medições limpas).
+- O simulador tem **bordo de paredes** (a arena real é fechada — Fig. 2).
+
+### Dificuldades / Alterações / Abandonos
+- Bug encontrado pelo simulador: o agente ficava **preso no limite do mapa**
+  (o limite não vinha como parede). Resolvido com o "aprender com bloqueios" —
+  uma melhoria que **também** torna o agente robusto no jogo real.

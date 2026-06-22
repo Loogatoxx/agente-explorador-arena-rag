@@ -170,4 +170,24 @@ Em conjunto com o Afonso, decidimos avançar com a opção C — a interface gr�
 - Garantiu robustez *headless* (a janela é ignorada sem ecrã) e confirmou que os
   15 testes continuam verdes.
 
+---
+
+## Interação #8 — Otimização de desempenho ("modo ultracode") (2026-06-22)
+
+### O meu Prompt
+Pedi para otimizar tudo, em todas as categorias, para termos o robô mais
+eficiente e ganhar aos outros grupos. Disse para usar o máximo de capacidade de
+cálculo. (Prompt pensado por mim, Carlos.)
+
+### A Resposta da IA
+- Em vez de "afinar à toa", construiu um **simulador da Arena** para medir
+  objetivamente o desempenho (labirinto, radar com oclusão, benchmark A/B).
+- Implementou a maior melhoria (navegação): **mapa acumulado**, **pathfinding
+  BFS**, **exploração por fronteiras** e **aprender com movimentos bloqueados**.
+- O simulador apanhou um bug real (agente preso no limite do mapa), que foi
+  corrigido — e a correção torna o agente robusto no jogo real.
+- **Provou o ganho com números**: cenários resolvidos passaram de 6/30 para
+  29/30 e o score global melhorou ~86,7% (e ~20% menos turnos nos cenários
+  comuns). Travou o ganho num teste de regressão. 16 testes verdes.
+
 
