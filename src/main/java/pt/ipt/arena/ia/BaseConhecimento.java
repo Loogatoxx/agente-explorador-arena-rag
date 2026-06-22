@@ -51,4 +51,17 @@ public class BaseConhecimento {
         }
         return melhor;
     }
+
+    /**
+     * Os {@code k} chunks mais relevantes, por ordem decrescente de semelhança.
+     * Dar mais contexto ao LLM melhora a precisão quando a resposta não está
+     * toda num único parágrafo.
+     */
+    public List<DocumentoVetorial> maisRelevantes(double[] vetorPergunta, int k) {
+        List<DocumentoVetorial> ordenados = new ArrayList<>(documentos);
+        ordenados.sort((a, b) -> Double.compare(
+                Vetores.cosseno(vetorPergunta, b.getVetor()),
+                Vetores.cosseno(vetorPergunta, a.getVetor())));
+        return ordenados.subList(0, Math.min(k, ordenados.size()));
+    }
 }

@@ -29,6 +29,8 @@ public class PipelineRag {
 
     private final ArenaClient arena;
     private final OllamaClient ollama;
+    private static final int TOP_K = 3;
+
     private final BaseConhecimento base = new BaseConhecimento();
     private boolean indexado = false;
 
@@ -73,15 +75,20 @@ public class PipelineRag {
         if (vetorPergunta == null) {
             return null;
         }
-        DocumentoVetorial contexto = base.maisRelevante(vetorPergunta);
-        if (contexto == null) {
+        List<DocumentoVetorial> topo = base.maisRelevantes(vetorPergunta, TOP_K);
+        if (topo.isEmpty()) {
             return null;
         }
-        String bruto = ollama.gerarTextoRaw(construirChatML(contexto.getTexto(), enigma));
+        StringBuilder contexto = new StringBuilder();
+        for (DocumentoVetorial doc : topo) {
+            contexto.append(doc.getTexto()).append('\n');
+        }
+        String seccao = contexto.toString().trim();
+        String bruto = ollama.gerarTextoRaw(construirChatML(seccao, enigma));
         if (bruto == null) {
             return null;
         }
-        return new ResultadoRag(limparChave(bruto), contexto.getTexto(), bruto);
+        return new ResultadoRag(limparChave(bruto), seccao, bruto);
     }
 
     /**
@@ -148,6 +155,10 @@ public class PipelineRag {
                 break;
             }
         }
-        return texto.replaceAll("^[\"'`]+", "").replaceAll("[\"'`]+$", "").trim();
+        // Remove prefixos verbosos comuns ("A chave é", "chave:", "key:", "resposta:").
+        texto = texto.replaceFirst(
+                "(?i)^(a\\s+chave\\s*(é|e)?\\s*:?\\s*|chave\\s*:?\\s*|key\\s*:?\\s*|resposta\\s*(é|e)?\\s*:?\\s*)", "");
+        // Remove aspas/crase e pontuação a envolver a chave.
+        return texto.replaceAll("^[\"'`]+", "").replaceAll("[\"'`.,;:]+$", "").trim();
     }
 }
