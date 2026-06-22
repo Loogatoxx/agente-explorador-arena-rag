@@ -403,3 +403,32 @@
 - Bug encontrado pelo simulador: o agente ficava **preso no limite do mapa**
   (o limite não vinha como parede). Resolvido com o "aprender com bloqueios" —
   uma melhoria que **também** torna o agente robusto no jogo real.
+
+---
+
+## 2026-06-22 — Etapa 11: Otimização do RAG e do combate
+*(Continuação do "modo ultracode" — Carlos.)*
+
+### O que foi feito
+- **RAG — retrieval top-K**: passa a juntar os **3** chunks mais relevantes
+  (`BaseConhecimento.maisRelevantes`) como contexto, em vez de só 1 — dá mais
+  informação ao LLM e melhora a precisão quando a resposta não está toda num
+  parágrafo.
+- **RAG — limpeza de chave mais robusta**: `limparChave` remove agora prefixos
+  verbosos ("A chave é…", "chave:", "key:", "resposta:") além de aspas e
+  pontuação. Re-testado em direto contra o Ollama → continua a extrair
+  `POLY-SEAL` limpo.
+- **Combate mais inteligente** (`AvaliadorBatalha`):
+  - **limiar mínimo de HP** (40): não investe se estiver fraco, mesmo contra um
+    rival mais fraco (evita suicídios);
+  - **margem de vantagem** (15 = um golpe): só ataca com vantagem clara;
+  - **retirada para curar**: ao fugir, se conhecer um cofre alcançável e o
+    caminho não o aproximar do rival, retira-se para lá (cura +100 HP).
+
+### Verificação
+- Total: **18 testes verdes** (`mvn test`), incluindo os novos testes de limpeza
+  de chave e de não-suicídio em combate.
+
+### Decisões e justificações
+- Top-K = 3 (equilíbrio entre contexto e ruído).
+- A retirada para cura usa o mesmo `Pathfinder` da navegação (reutilização).

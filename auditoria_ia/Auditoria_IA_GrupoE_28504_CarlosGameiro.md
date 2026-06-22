@@ -189,5 +189,8 @@ cálculo. (Prompt pensado por mim, Carlos.)
 - **Provou o ganho com números**: cenários resolvidos passaram de 6/30 para
   29/30 e o score global melhorou ~86,7% (e ~20% menos turnos nos cenários
   comuns). Travou o ganho num teste de regressão. 16 testes verdes.
+- Depois otimizou as restantes categorias: **RAG** (retrieval top-K + limpeza
+  robusta da chave) e **combate** (limiar de HP para não suicidar, margem de
+  vantagem, retirada para curar). Ficou com **18 testes verdes**.
 
 
