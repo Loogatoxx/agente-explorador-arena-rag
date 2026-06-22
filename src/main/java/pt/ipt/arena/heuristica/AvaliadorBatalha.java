@@ -28,10 +28,22 @@ public class AvaliadorBatalha implements AvaliadorAcao {
     private static final int DISTANCIA_DE_ENGAJAMENTO = 2;
 
     /** Não engaja em combate abaixo deste HP, mesmo contra um rival mais fraco. */
-    private static final int LIMIAR_MINIMO_COMBATE = 40;
+    private final int limiarMinimoCombate;
 
     /** Margem de vantagem exigida para atacar (um golpe vale 15 de dano). */
-    private static final int MARGEM_VANTAGEM = 15;
+    private final int margemVantagem;
+
+    public AvaliadorBatalha() {
+        // Defaults AGRESSIVOS escolhidos pelo benchmark de duelos (SimuladorDuelo):
+        // bate-se enquanto não estiver claramente mais fraco (15+ HP abaixo), sem
+        // fugir por pânico a baixo HP — fugir a igual velocidade só encaixa golpes.
+        this(0, -15);
+    }
+
+    public AvaliadorBatalha(int limiarMinimoCombate, int margemVantagem) {
+        this.limiarMinimoCombate = limiarMinimoCombate;
+        this.margemVantagem = margemVantagem;
+    }
 
     @Override
     public Optional<Acao> avaliar(ContextoDecisao ctx, MemoriaHeuristica memoria, List<Bussola> validas) {
@@ -46,8 +58,8 @@ public class AvaliadorBatalha implements AvaliadorAcao {
         }
 
         // Ataca só com vantagem CLARA (HP acima do limiar e bem acima do rival).
-        boolean vantagemClara = ctx.meuHp() >= LIMIAR_MINIMO_COMBATE
-                && ctx.meuHp() > alvo.getHp() + MARGEM_VANTAGEM;
+        boolean vantagemClara = ctx.meuHp() >= limiarMinimoCombate
+                && ctx.meuHp() > alvo.getHp() + margemVantagem;
         if (vantagemClara) {
             Bussola passo = Bussola.direcaoQueReduzManhattan(pos, alvo.getPosicao(), validas);
             if (passo != null) {

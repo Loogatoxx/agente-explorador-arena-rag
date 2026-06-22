@@ -63,6 +63,19 @@ public class MotorHeuristico {
                         new AvaliadorMapaCalor()));
     }
 
+    /**
+     * Configuração otimizada com parâmetros de combate à medida (limiar de HP e
+     * margem de vantagem). Usada pelo benchmark de duelos para procurar a melhor
+     * fórmula de luta/fuga.
+     */
+    public static MotorHeuristico comCombate(String idRobo, int limiarHp, int margem) {
+        return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(new AvaliadorReflexos(),
+                        new AvaliadorBatalha(limiarHp, margem),
+                        new AvaliadorAlvo(),
+                        new AvaliadorExploracao()));
+    }
+
     /** Construtor de injeção (testes unitários). */
     public MotorHeuristico(String idRobo, MemoriaHeuristica memoria,
                            FiltroColisoes filtroColisoes, List<AvaliadorAcao> cadeia) {
