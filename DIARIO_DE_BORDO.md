@@ -63,3 +63,26 @@
   locais; falta decidir como criar o repositório privado e convidar o professor
   (`pscm@ipt.pt`). A resolver na próxima etapa.
 - Nada foi abandonado nesta etapa (é o arranque).
+
+---
+
+## 2026-06-22 — Etapa 1: Equipa e preparação do GitHub
+
+### O que foi feito
+- Registado o **2º elemento do grupo**: Afonso Trindade (nº 28292).
+- Criado o ficheiro de auditoria individual do Afonso em `auditoria_ia/`
+  (cada aluno entrega o seu próprio ficheiro).
+- Instalada a CLI **`gh`** (GitHub CLI) via Homebrew, para criar o repositório
+  privado, configurar o remote e convidar o professor.
+
+### Decisões e justificações
+- Escolhida a abordagem "instalar `gh` e automatizar" para a criação do
+  repositório e o convite do professor (`pscm@ipt.pt`), em vez de o fazer
+  manualmente no site.
+- Mantém-se o número do grupo como "(a confirmar)" nos nomes dos ficheiros de
+  auditoria (`GrupoXX`) até ser indicado.
+
+### Dificuldades / Alterações / Abandonos
+- A autenticação na `gh` (`gh auth login`) é **interativa** e tem de ser feita
+  uma única vez pelo próprio utilizador no seu terminal; depois disso os
+  comandos `gh` passam a funcionar de forma automática.
