@@ -64,4 +64,26 @@ por mim, Afonso.)
 - Explicou que os nomes de campos internos são inferidos do enunciado e ficam
   fáceis de ajustar quando houver telemetria real.
 
+---
+
+## Interação #3 — Motor heurístico (opção A), trabalho conjunto (2026-06-22)
+
+### O meu Prompt
+Em conjunto com o Carlos, decidimos avançar com a opção A — o motor heurístico de
+navegação. Como foi pensado pelos dois, o commit fica em coautoria (Carlos +
+Afonso).
+
+### A Resposta da IA
+- Antes de codificar, correu um **workflow multi-agente de design** (3 propostas
+  independentes + síntese) e escolheu uma arquitetura de **pipeline de avaliadores**
+  (Strategy/Chain): Reflexos → Batalha → Atração → Mapa de Calor.
+- Implementou as classes do pacote `heuristica` (Bussola, MemoriaHeuristica,
+  ContextoDecisao, FiltroColisoes, interface AvaliadorAcao + 4 avaliadores) e
+  transformou o `MotorHeuristico` numa fachada fina (SRP, anti "Classe Deus").
+- Isolou a **incerteza dos eixos** num único booleano (`Bussola`) e o **estado
+  mutável** numa única classe (`MemoriaHeuristica`).
+- Escreveu **testes JUnit 5** (7 testes, todos verdes com `mvn test`).
+- A revisão adversarial em workflow foi cortada pela **limite de sessão**; a
+  revisão foi feita manualmente, com remoção de código morto.
+
 

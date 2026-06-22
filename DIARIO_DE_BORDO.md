@@ -241,3 +241,49 @@
 - O `MotorHeuristico` é, de propósito, um *placeholder* (devolve sempre
   MOVER_NORTE) até à etapa de heurística — a navegação inteligente (colisões,
   mapa de calor, atração por alvos, luta/fuga) ainda não foi escrita.
+
+---
+
+## 2026-06-22 — Etapa 7: Motor heurístico real (navegação inteligente)
+*(Prompt pensado pelos DOIS → commits em coautoria Carlos + Afonso.)*
+
+### O que foi feito
+- Substituído o *placeholder* pelo verdadeiro `MotorHeuristico`, desenhado como
+  **pipeline de avaliadores** (padrão Strategy/Chain) por prioridade:
+  **Reflexos → Batalha → Atração → Mapa de Calor**.
+- Classes novas (pacote `heuristica`):
+  - `Bussola` (enum) — **único** ponto de verdade sobre os eixos; resolve a
+    incerteza da orientação num só booleano (`NORTE_E_Y_NEGATIVO`).
+  - `MemoriaHeuristica` — **único** dono do estado mutável (mapa de calor,
+    lista negra de cofres, fila de reflexos), com operações "Tell, Don't Ask".
+  - `ContextoDecisao` — DTO imutável por turno (pré-computa paredes/alvos/rivais).
+  - `FiltroColisoes` — regra de colisões transversal, calculada 1x por turno.
+  - `AvaliadorAcao` (interface) + `AvaliadorReflexos`, `AvaliadorBatalha`,
+    `AvaliadorAtracao`, `AvaliadorMapaCalor`.
+  - `MotorHeuristico` passa a fachada fina (orquestra a cadeia; nunca devolve
+    `null`, nunca propaga exceção).
+- **Testes JUnit 5** (`MotorHeuristicoTest`, 7 testes): colisões, atração,
+  exploração sem círculos, fuga/ataque em batalha, sanidade null e cercado.
+  `mvn test` → 7/7 verdes.
+
+### Processo (uso de IA)
+- Usou-se um **workflow multi-agente de design** (3 propostas independentes —
+  MVP, robustez, arquitetura — + síntese) para escolher a arquitetura.
+- Implementação a partir da síntese, seguida de **revisão**.
+
+### Decisões e justificações
+- Eixos centralizados na `Bussola`: confirmar a orientação numa sala real =
+  inverter 1 booleano. A distância de Manhattan é invariante ao sinal.
+- Estado só na `MemoriaHeuristica`, atualizado pelo motor (nunca pelo ciclo) →
+  SRP, `AgenteExplorador` mantém-se fino.
+- Desempate **determinista** (ordem NORTE, ESTE, SUL, OESTE) → reprodutível.
+- Cercado → limpar lista negra 1x e recalcular; se persistir, ação segura.
+
+### Dificuldades / Alterações / Abandonos
+- A **revisão adversarial em workflow** foi interrompida pela **limite de sessão
+  (créditos)** — fez-se a revisão **manualmente**. Resultado: removido código
+  morto (`Bussola.oposta()`, `ContextoDecisao.direcoesBase()`); restante lógica
+  confirmada por testes + leitura.
+- Adicionou-se **JUnit 5 + maven-surefire** ao `pom.xml`.
+- A orientação do eixo Y continua por confirmar com sala ativa, mas está
+  isolada num único booleano na `Bussola`.

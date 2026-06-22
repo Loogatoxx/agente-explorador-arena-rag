@@ -101,4 +101,28 @@ dois, fica em coautoria. Perguntei à IA se era uma boa abordagem.
 - Registou a convenção no diário de bordo e aplicou-a já a este commit (pensado
   por mim, logo em meu nome).
 
+---
+
+## Interação #5 — Motor heurístico (opção A), trabalho conjunto (2026-06-22)
+
+### O meu Prompt
+Decidimos avançar com a opção A — o motor heurístico de navegação. Este trabalho
+foi pensado em conjunto comigo e com o Afonso (logo, commit em coautoria). A meio
+do processo, a revisão automática parou por limite de sessão e eu pedi para
+continuar, confirmando que o commit ficaria nos dois nomes.
+
+### A Resposta da IA
+- Antes de codificar, correu um **workflow multi-agente de design** (3 propostas
+  independentes + síntese) e escolheu uma arquitetura de **pipeline de avaliadores**
+  (Strategy/Chain): Reflexos → Batalha → Atração → Mapa de Calor.
+- Implementou as classes do pacote `heuristica` (Bussola, MemoriaHeuristica,
+  ContextoDecisao, FiltroColisoes, interface AvaliadorAcao + 4 avaliadores) e
+  transformou o `MotorHeuristico` numa fachada fina (SRP, anti "Classe Deus").
+- Isolou a **incerteza dos eixos** num único booleano (`Bussola`) e o **estado
+  mutável** numa única classe (`MemoriaHeuristica`).
+- Escreveu **testes JUnit 5** (7 testes, todos verdes com `mvn test`).
+- Quando a revisão adversarial em workflow foi cortada pela **limite de sessão**,
+  fez a revisão **manualmente** e removeu código morto (`Bussola.oposta()`,
+  `ContextoDecisao.direcoesBase()`).
+
 
