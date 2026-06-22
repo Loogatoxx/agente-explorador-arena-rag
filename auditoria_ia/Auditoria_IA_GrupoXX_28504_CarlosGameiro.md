@@ -42,3 +42,23 @@ enunciado em PDF) e defini as regras de trabalho:
 - Organizou o trabalho em 3 commits temáticos.
 - Sinalizou que o *push* fica pendente até existir um repositório GitHub
   privado (com o professor `pscm@ipt.pt` convidado).
+
+---
+
+## Interação #2 — Configuração do GitHub e equipa (2026-06-22)
+
+### O meu Prompt
+Em resposta à pergunta sobre como criar o repositório, escolhi a opção de
+**instalar a CLI `gh` e deixar a IA criar tudo** (repositório privado, remote,
+push e convite do professor). Acrescentei que tenho um colega de grupo:
+**Afonso Trindade, nº 28292**, e pedi para adaptar o projeto a isso.
+
+### A Resposta da IA
+- Confirmou que o Homebrew está disponível e iniciou a instalação da `gh`.
+- Criou o ficheiro de auditoria individual do Afonso
+  (`Auditoria_IA_GrupoXX_28292_AfonsoTrindade.md`), por o professor exigir um
+  ficheiro por aluno.
+- Registou o colega no diário de bordo e na memória do projeto.
+- Ficou a faltar apenas a autenticação interativa na `gh` (passo único feito
+  pelo próprio utilizador) para depois criar o repositório e fazer push.
+
