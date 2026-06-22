@@ -30,7 +30,9 @@ public class MemoriaHeuristica {
 
     private final Map<String, Integer> historicoVisitas = new HashMap<>();
     private final Set<String> cofresFalhados = new HashSet<>();
+    private final Set<String> cofresResolvidos = new HashSet<>();
     private final Deque<Acao> filaAcoesPlaneadas = new ArrayDeque<>();
+    private final MapaDescoberto mapa = new MapaDescoberto();
 
     // ----- Mapa de calor -----
 
@@ -55,6 +57,34 @@ public class MemoriaHeuristica {
     /** Limpa a lista negra (usado para destrancar um cerco causado por ela). */
     public void limparListaNegra() {
         cofresFalhados.clear();
+    }
+
+    public void marcarCofreResolvido(Coordenada c) {
+        cofresResolvidos.add(c.chave());
+        mapa.removerCofre(c);
+    }
+
+    public boolean cofreResolvido(Coordenada c) {
+        return cofresResolvidos.contains(c.chave());
+    }
+
+    // ----- Mapa acumulado e exploração -----
+
+    /** Mapa do mundo acumulado entre turnos (paredes, recursos, cofres vistos). */
+    public MapaDescoberto getMapa() {
+        return mapa;
+    }
+
+    /** Cópia das células já pisadas (chaves "x,y"). */
+    public Set<String> celulasVisitadas() {
+        return new HashSet<>(historicoVisitas.keySet());
+    }
+
+    /** Células intransitáveis para o pathfinding: paredes conhecidas + lista negra. */
+    public Set<String> celulasBloqueadas() {
+        Set<String> bloqueadas = new HashSet<>(mapa.paredes());
+        bloqueadas.addAll(cofresFalhados);
+        return bloqueadas;
     }
 
     // ----- Fila de ações planeadas (reflexos) -----
