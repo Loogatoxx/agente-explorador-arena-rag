@@ -139,8 +139,62 @@ public class ArenaClient {
         return enviarEParsear(pedido, "agir");
     }
 
-    // TODO (etapa: RAG)  POST /arena/{room_id}/unlock  -> submeter a chave extraida.
-    // TODO (etapa: RAG)  GET  /arena/{room_id}/download_manual -> obter o manual tecnico.
+    /**
+     * GET /arena/{room_id}/download_manual
+     *
+     * Descarrega o manual técnico (texto) que alimenta o pipeline RAG. Devolve o
+     * corpo da resposta tal como recebido (texto a ser dividido em chunks), ou
+     * {@code null} em caso de falha de rede.
+     */
+    public String descarregarManual() {
+        String url = URL_BASE + "/arena/" + segmento(codigoSala) + "/download_manual";
+
+        HttpRequest pedido = HttpRequest.newBuilder(URI.create(url))
+                .timeout(TIMEOUT_PEDIDO)
+                .GET()
+                .build();
+
+        return enviarTexto(pedido, "descarregarManual");
+    }
+
+    /**
+     * POST /arena/{room_id}/unlock?robot_id=&code=&rag_chunk=&llm_raw=
+     *
+     * Submete ao cofre a chave extraída pelo pipeline RAG. {@code ragChunk} (a
+     * secção do manual usada) e {@code llmRaw} (a resposta crua do LLM) são
+     * opcionais — enviá-los dá transparência ao servidor. Devolve o JSON de
+     * resposta ({@code {"status": "sucesso"|"falha", ...}}) ou {@code null}.
+     */
+    public JsonObject desbloquear(String code, String ragChunk, String llmRaw) {
+        String url = URL_BASE + "/arena/" + segmento(codigoSala) + "/unlock"
+                + "?robot_id=" + parametro(idRobo)
+                + "&code=" + parametro(code)
+                + "&rag_chunk=" + parametro(ragChunk == null ? "Não enviado" : ragChunk)
+                + "&llm_raw=" + parametro(llmRaw == null ? "Não enviado" : llmRaw);
+
+        HttpRequest pedido = HttpRequest.newBuilder(URI.create(url))
+                .timeout(TIMEOUT_PEDIDO)
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        return enviarEParsear(pedido, "desbloquear");
+    }
+
+    /** Envia um pedido e devolve o corpo da resposta como texto cru (ex.: manual). */
+    private String enviarTexto(HttpRequest pedido, String operacao) {
+        try {
+            HttpResponse<String> resposta = http.send(pedido, BodyHandlers.ofString());
+            return resposta.body();
+        } catch (java.io.IOException e) {
+            System.err.println("[ArenaClient] Falha de rede em '" + operacao + "': " + e.getMessage());
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("[ArenaClient] Pedido '" + operacao + "' interrompido.");
+            return null;
+        }
+    }
 
     /**
      * Envia o pedido e converte o corpo da resposta num {@link JsonObject}.
