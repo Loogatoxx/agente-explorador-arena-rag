@@ -110,3 +110,29 @@
   realizar.
 - **Número do grupo** ainda por confirmar (os ficheiros de auditoria usam
   `GrupoXX`).
+
+---
+
+## 2026-06-22 — Etapa 3: Grupo E confirmado e questão da coautoria
+
+### O que foi feito
+- Confirmado que somos o **Grupo E**.
+- Ficheiros de auditoria renomeados de `GrupoXX` para `GrupoE`
+  (`Auditoria_IA_GrupoE_28504_CarlosGameiro.md` e
+  `Auditoria_IA_GrupoE_28292_AfonsoTrindade.md`), com o campo "Número do Grupo"
+  atualizado para E.
+- Confirmado que o Afonso **aceitou o convite** e já é colaborador do
+  repositório (utilizador GitHub: `Afonso4538`, id 279673620).
+
+### Decisões e justificações
+- Levantou-se a questão de como fazer os commits aparecerem em **nome dos dois**
+  elementos (à semelhança do trailer `Co-Authored-By: Claude`).
+  - O GitHub liga um coautor ao seu perfil através do email; o email "noreply"
+    do Afonso é `279673620+Afonso4538@users.noreply.github.com`.
+  - Princípio adotado: a coautoria (`Co-Authored-By:`) só faz sentido em
+    trabalho **realmente feito em conjunto**; o trabalho individual de cada um
+    deve ser commitado pelo próprio (autoria autêntica), porque o professor
+    avalia "quem programou o quê". A forma concreta fica a combinar com o Afonso.
+
+### Dificuldades / Alterações / Abandonos
+- Nada abandonado nesta etapa.
