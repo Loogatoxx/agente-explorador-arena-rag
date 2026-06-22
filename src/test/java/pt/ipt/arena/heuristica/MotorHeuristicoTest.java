@@ -92,6 +92,15 @@ class MotorHeuristicoTest {
     }
 
     @Test
+    void naoAtacaComHpBaixoMesmoContraMaisFraco() {
+        MotorHeuristico motor = new MotorHeuristico("eu");
+        Acao acao = motor.decidir(percecao(
+                "{\"game_started\":true,\"o_meu_estado\":{\"x\":5,\"y\":5,\"hp\":30},"
+                        + "\"outros_robots\":[{\"id\":\"r1\",\"x\":5,\"y\":6,\"hp\":10}]}"));
+        assertNotEquals(Acao.MOVER_SUL, acao, "com HP baixo não deve investir, mesmo contra um rival mais fraco");
+    }
+
+    @Test
     void percecaoNulaNaoRebenta() {
         MotorHeuristico motor = new MotorHeuristico("eu");
         Acao acao = motor.decidir(null);

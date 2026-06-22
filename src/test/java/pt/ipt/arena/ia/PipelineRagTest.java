@@ -27,6 +27,13 @@ class PipelineRagTest {
     }
 
     @Test
+    void limparChaveRemovePrefixoVerboso() {
+        assertEquals("POLY-SEAL", PipelineRag.limparChave("A chave é POLY-SEAL."));
+        assertEquals("ABC123", PipelineRag.limparChave("chave: ABC123"));
+        assertEquals("XPTO-9", PipelineRag.limparChave("Resposta: \"XPTO-9\""));
+    }
+
+    @Test
     void chatmlContemRestricoesSeccaoEEnigma() {
         String prompt = PipelineRag.construirChatML("manual XPTO", "enigma YYY");
         assertTrue(prompt.contains("<|im_start|>system"), "deve ter o papel system");
