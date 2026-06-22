@@ -86,4 +86,21 @@ Afonso).
 - A revisão adversarial em workflow foi cortada pela **limite de sessão**; a
   revisão foi feita manualmente, com remoção de código morto.
 
+---
+
+## Interação #4 — Interface gráfica (opção C), trabalho conjunto (2026-06-22)
+
+### O meu Prompt
+Em conjunto com o Carlos, decidimos avançar com a opção C — a interface gráfica
+`PainelMapaCalor`. Como foi pensado pelos dois, o commit fica em coautoria.
+
+### A Resposta da IA
+- Implementou o `PainelMapaCalor` (Swing/Graphics2D) — a 5.ª classe obrigatória —
+  com radar centrado no agente, mapa de calor das células visitadas, paredes,
+  recursos, cofres, rivais, painel de telemetria e legenda.
+- Manteve o SRP (a UI só desenha; recebe um snapshot imutável do mapa de calor)
+  e integrou-a no ciclo do `AgenteExplorador`, com robustez *headless*.
+- Validou o resultado renderizando o painel para um PNG (`docs/dashboard.png`),
+  confirmando-o visualmente, sem regressões nos 15 testes.
+
 

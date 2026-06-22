@@ -151,4 +151,23 @@ mim, Carlos.)
 - Explicou a opção de `/api/generate raw=true` para enviar o ChatML construído
   em Java tal e qual (a técnica pedida no enunciado).
 
+---
+
+## Interação #7 — Interface gráfica (opção C), trabalho conjunto (2026-06-22)
+
+### O meu Prompt
+Em conjunto com o Afonso, decidimos avançar com a opção C — a interface gráfica
+`PainelMapaCalor`. Como foi pensado pelos dois, o commit fica em coautoria.
+
+### A Resposta da IA
+- Implementou o `PainelMapaCalor` (Swing/Graphics2D) — a 5.ª classe obrigatória —
+  com radar, mapa de calor, paredes/recursos/cofres/rivais, painel de telemetria
+  e legenda.
+- Manteve o SRP: a UI recebe os dados por `atualizar()` e lê só um snapshot
+  imutável do mapa de calor; integrou-a no ciclo do `AgenteExplorador`.
+- Para validar sem depender de ecrã, **renderizou o painel para um PNG**
+  (`docs/dashboard.png`) e confirmou o resultado visualmente.
+- Garantiu robustez *headless* (a janela é ignorada sem ecrã) e confirmou que os
+  15 testes continuam verdes.
+
 

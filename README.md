@@ -37,6 +37,15 @@ através de um **pipeline RAG** executado num motor de IA local (**Ollama**).
    ollama pull nomic-embed-text
    ```
 
+## Interface (PainelMapaCalor)
+Dashboard de telemetria local em Java Swing: radar centrado no agente, mapa de
+calor das células visitadas, paredes, recursos, cofres e rivais, mais o estado
+(posição, HP, contagens).
+
+![Dashboard de telemetria](docs/dashboard.png)
+
+*(render ilustrativo com um estado de jogo de exemplo.)*
+
 ## Documentação do projeto
 - `DIARIO_DE_BORDO.md` — histórico cronológico completo do desenvolvimento.
 - `auditoria_ia/` — auditoria individual do uso de IA (prompts e respostas).

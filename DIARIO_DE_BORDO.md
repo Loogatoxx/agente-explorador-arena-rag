@@ -331,3 +331,36 @@
 - Sem sala ativa, `indexarManual()`/`desbloquear()` só serão testáveis
   ponta-a-ponta com uma sala real; a lógica RAG foi validada localmente com um
   manual falso.
+
+---
+
+## 2026-06-22 — Etapa 9: Interface gráfica (PainelMapaCalor)
+*(Prompt pensado pelos DOIS → commits em coautoria Carlos + Afonso.)*
+
+### O que foi feito
+- Implementado o `PainelMapaCalor` (Java Swing / Graphics2D), a 5.ª classe
+  obrigatória — completa-se assim a estrutura mínima exigida.
+- Desenha um **radar** centrado no agente (13×13 células) com: **mapa de calor**
+  (intensidade de verde conforme as visitas), **paredes** (laranja), **recursos**
+  (verde), **cofres** (amarelo), **rivais** (vermelho) e o **agente** (azul),
+  mais um painel de **telemetria** (posição, barra de HP, contagens, células
+  visitadas) e uma **legenda**.
+- A UI recebe os dados de fora por `atualizar(Percecao, Map)` e lê apenas um
+  **snapshot imutável** do mapa de calor (`MemoriaHeuristica.snapshotMapaCalor()`)
+  — nunca toca no estado mutável do motor.
+- `AgenteExplorador` abre a janela (`PainelMapaCalor.abrirJanela`) e atualiza-a
+  a cada turno; em ambiente *headless* a janela é simplesmente ignorada.
+
+### Verificação
+- Renderizou-se o painel para um **PNG** (estado de jogo de exemplo) e
+  confirmou-se o resultado visualmente — ver `docs/dashboard.png`.
+- `mvn test` continua com **15 testes verdes** (a UI não introduziu regressões).
+
+### Decisões e justificações
+- A janela é criada via método estático `abrirJanela` que devolve `null` em
+  *headless* → o agente pode correr sem ecrã (e os testes não dependem de UI).
+- SRP mantido: a UI só desenha; recebe dados prontos e um snapshot imutável.
+
+### Dificuldades / Alterações / Abandonos
+- Nada abandonado. Para validar sem depender de um ecrã, optou-se por renderizar
+  o painel diretamente para uma imagem (`BufferedImage`) em vez de abrir janela.
