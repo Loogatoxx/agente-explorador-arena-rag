@@ -86,3 +86,27 @@
 - A autenticação na `gh` (`gh auth login`) é **interativa** e tem de ser feita
   uma única vez pelo próprio utilizador no seu terminal; depois disso os
   comandos `gh` passam a funcionar de forma automática.
+
+---
+
+## 2026-06-22 — Etapa 2: Repositório remoto criado e primeiro push
+
+### O que foi feito
+- Autenticação na `gh` concluída (conta GitHub: `Loogatoxx`).
+- Criado o repositório **privado** `agente-explorador-arena-rag`:
+  https://github.com/Loogatoxx/agente-explorador-arena-rag
+- Configurado o remote `origin` e feito **push** dos 6 commits iniciais.
+- A branch `main` local passa a seguir `origin/main`.
+
+### Decisões e justificações
+- Repositório **privado**, como exige o enunciado.
+- Nome do repositório: `agente-explorador-arena-rag` (descritivo).
+
+### Dificuldades / Alterações / Abandonos
+- **Convite do professor (`pscm@ipt.pt`)**: a CLI `gh` / API do GitHub adiciona
+  colaboradores por **nome de utilizador**, não por email. Como só temos o email
+  do professor, o convite tem de ser feito pela interface web do GitHub
+  (Settings → Collaborators → Add people → escrever o email). Fica como passo a
+  realizar.
+- **Número do grupo** ainda por confirmar (os ficheiros de auditoria usam
+  `GrupoXX`).
