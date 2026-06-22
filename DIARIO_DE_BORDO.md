@@ -165,3 +165,41 @@
 - Nada abandonado. (Em alternativa mais "pura", o Afonso poderia commitar
   sempre a partir da sua própria máquina; optou-se pela atribuição por `--author`
   por praticidade, mantendo a autenticidade.)
+
+---
+
+## 2026-06-22 — Etapa 5: ArenaClient (register + perceive)
+*(Prompt pensado pelo Afonso → commits em nome do Afonso.)*
+
+### O que foi feito
+- Estudada a API real do servidor através do **OpenAPI** (`/openapi.json`),
+  em vez de assumir os endpoints. Endpoints confirmados:
+  - `POST /arena/{room_id}/register?robot_id=...` (resposta `{status, message}`)
+  - `GET  /arena/{room_id}/perceive/{robot_id}`
+  - `POST /arena/action` (body `{room_id, robot_id, action}`)
+  - `POST /arena/{room_id}/unlock?robot_id=&code=&rag_chunk=&llm_raw=`
+  - `GET  /arena/{room_id}/download_manual`
+- Implementada a classe `ArenaClient` com:
+  - `registar()` → POST de registo;
+  - `percecionar()` → GET de telemetria;
+  - tratamento de rede robusto (timeouts + try-catch), devolvendo `null` em
+    falha para o ciclo recuperar (requisito de resiliência do enunciado);
+  - parsing com **Gson** para `JsonObject`.
+- **Teste em direto** contra o servidor real: o cliente liga-se e faz parse
+  corretamente. Compilação validada com a dependência Gson.
+
+### Decisões e justificações
+- `registar()`/`percecionar()` devolvem `JsonObject` (JSON estruturado) nesta
+  fase; os **modelos tipados** da telemetria (classes POJO) ficam para a etapa
+  seguinte, quando houver uma sala ativa para confirmar os nomes reais dos
+  campos. Evita-se assim mapear campos "às cegas".
+- Instalou-se o **Maven** (via Homebrew) para compilar/correr o projeto com as
+  dependências a partir da linha de comandos.
+
+### Dificuldades / Alterações / Abandonos
+- **Sala de treino indisponível**: `aluno_treino_2026` devolve "Sala não existe
+  ou já foi fechada" e `perceive` devolve `{"error":"Sala inválida"}`. O código
+  está correto, mas falta uma **sala instanciada** para testes reais. Hipótese:
+  este código funciona como *password de cenário* na consola web (Fig. 3 do
+  enunciado), que gera um código de sala de 6 caracteres. A confirmar quando se
+  quiser fazer testes com telemetria real.
