@@ -136,3 +136,32 @@
 
 ### Dificuldades / Alterações / Abandonos
 - Nada abandonado nesta etapa.
+
+---
+
+## 2026-06-22 — Etapa 4: Convenção de autoria dos commits e da auditoria
+
+### O que foi feito
+- Definida e adotada uma **convenção de autoria** para todo o projeto.
+
+### Decisões e justificações
+- No fim de cada prompt, o autor indica **quem o pensou**: "Carlos", "Afonso"
+  ou "os dois". A partir disso:
+  - **Carlos sozinho** → commit em nome do Carlos.
+  - **Afonso sozinho** → commit em nome do Afonso (via `git commit --author`
+    com o email GitHub do Afonso: `279673620+Afonso4538@users.noreply.github.com`).
+  - **Os dois** → o commit leva o outro elemento em `Co-Authored-By:`.
+  - Em **todos** os casos mantém-se `Co-Authored-By: Claude` (transparência no
+    uso de IA, critério avaliado).
+- **Refinamento 1**: a mesma regra aplica-se ao ficheiro de **auditoria de IA** —
+  o prompt é registado na auditoria de quem o pensou (a auditoria é individual).
+- **Refinamento 2**: a atribuição tem de **refletir a realidade** (quem
+  concebeu de facto o prompt), e não servir para equilibrar números. É a
+  contribuição autêntica que o professor avalia.
+- Identidades GitHub: Carlos = `Loogatoxx` (id 279675221);
+  Afonso = `Afonso4538` (id 279673620).
+
+### Dificuldades / Alterações / Abandonos
+- Nada abandonado. (Em alternativa mais "pura", o Afonso poderia commitar
+  sempre a partir da sua própria máquina; optou-se pela atribuição por `--author`
+  por praticidade, mantendo a autenticidade.)
