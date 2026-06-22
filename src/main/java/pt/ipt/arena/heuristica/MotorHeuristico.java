@@ -4,6 +4,7 @@ import pt.ipt.arena.modelo.Acao;
 import pt.ipt.arena.modelo.Coordenada;
 import pt.ipt.arena.modelo.EstadoRobo;
 import pt.ipt.arena.modelo.Percecao;
+import pt.ipt.arena.modelo.RoboRival;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +29,34 @@ public class MotorHeuristico {
     private final FiltroColisoes filtroColisoes;
     private final List<AvaliadorAcao> cadeia;
 
+    /** Posição e ação do turno anterior, para aprender com movimentos bloqueados. */
+    private Coordenada posicaoAnterior;
+    private Acao acaoAnterior;
+
     /** Wiring por omissão (sem id próprio). */
     public MotorHeuristico() {
         this(null);
     }
 
-    /** Wiring por omissão com o id do próprio robô (para filtrar o eco em batalha). */
+    /**
+     * Wiring por omissão (OTIMIZADO) com o id do próprio robô. Usa pathfinding:
+     * atração a alvos por BFS sobre o mapa acumulado e exploração por fronteiras.
+     */
     public MotorHeuristico(String idRobo) {
         this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(new AvaliadorReflexos(),
+                        new AvaliadorBatalha(),
+                        new AvaliadorAlvo(),
+                        new AvaliadorExploracao()));
+    }
+
+    /**
+     * Configuração "clássica" (gulosa: atração de 1 passo por Manhattan + mapa de
+     * calor, SEM mapa acumulado nem pathfinding). Mantida para o benchmark A/B
+     * que comprova o ganho da versão otimizada.
+     */
+    public static MotorHeuristico classico(String idRobo) {
+        return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(),
                         new AvaliadorAtracao(),
@@ -58,14 +79,22 @@ public class MotorHeuristico {
     public Acao decidir(Percecao percecao) {
         // E0 — Sanidade: sem perceção/estado válidos, sai em segurança sem mexer no estado.
         if (percecao == null || percecao.getOMeuEstado() == null) {
-            return acaoSegura();
+            return registarDecisao(acaoSegura(), null);
         }
 
+        Coordenada posicao = percecao.getOMeuEstado().getPosicao();
         try {
+            // E0b — Aprende com o turno anterior: se não nos mexemos, o movimento foi
+            //       bloqueado (parede ou limite do mapa) → memoriza essa parede.
+            aprenderComMovimentoBloqueado(percecao, posicao);
+
             // E1 — Mapa de calor (escrita): regista a pisada deste turno (exatamente 1 vez).
-            EstadoRobo estado = percecao.getOMeuEstado();
-            Coordenada posicao = estado.getPosicao();
             memoria.registarVisita(posicao);
+
+            // E1b — Mapa acumulado: junta paredes/recursos/cofres deste turno e
+            //       marca como coletado um recurso que esteja na nossa posição.
+            memoria.getMapa().integrar(percecao);
+            memoria.getMapa().marcarRecursoColetado(posicao);
 
             // E2 — Contexto do turno (pré-computado uma vez).
             ContextoDecisao ctx = ContextoDecisao.construir(percecao, memoria, idRobo);
@@ -83,17 +112,47 @@ public class MotorHeuristico {
             for (AvaliadorAcao avaliador : cadeia) {
                 Optional<Acao> decisao = avaliador.avaliar(ctx, memoria, validas);
                 if (decisao.isPresent()) {
-                    return decisao.get();
+                    return registarDecisao(decisao.get(), posicao);
                 }
             }
 
             // E5b — Sem decisão (cercado de facto): saída segura determinista.
-            return acaoSegura();
+            return registarDecisao(acaoSegura(), posicao);
 
         } catch (RuntimeException e) {
             System.err.println("[MotorHeuristico] Erro inesperado na decisão: " + e.getMessage());
-            return acaoSegura();
+            return registarDecisao(acaoSegura(), posicao);
         }
+    }
+
+    /** Guarda a posição/ação deste turno (para o turno seguinte) e devolve a ação. */
+    private Acao registarDecisao(Acao decisao, Coordenada posicao) {
+        this.posicaoAnterior = posicao;
+        this.acaoAnterior = decisao;
+        return decisao;
+    }
+
+    /**
+     * Se a posição não mudou desde o turno anterior, a ação anterior foi
+     * bloqueada: regista a célula-destino como parede. Exceções: cofres (são
+     * transponíveis) e células ocupadas por rivais (foi um ataque, não parede).
+     */
+    private void aprenderComMovimentoBloqueado(Percecao percecao, Coordenada posicao) {
+        if (posicaoAnterior == null || acaoAnterior == null || !posicaoAnterior.equals(posicao)) {
+            return;
+        }
+        Coordenada alvo = Bussola.de(acaoAnterior).aplicar(posicao);
+        for (Coordenada cofre : memoria.getMapa().cofres()) {
+            if (cofre.em(alvo.getX(), alvo.getY())) {
+                return;
+            }
+        }
+        for (RoboRival rival : percecao.getOutrosRobots()) {
+            if (rival != null && rival.getX() == alvo.getX() && rival.getY() == alvo.getY()) {
+                return;
+            }
+        }
+        memoria.getMapa().registarParede(alvo);
     }
 
     /**
@@ -102,6 +161,11 @@ public class MotorHeuristico {
      */
     public void marcarCofreFalhado(Coordenada posicaoCofre) {
         memoria.marcarCofreFalhado(posicaoCofre);
+    }
+
+    /** Marca um cofre como resolvido (deixa de ser alvo). Chamado após unlock com sucesso. */
+    public void marcarCofreResolvido(Coordenada posicaoCofre) {
+        memoria.marcarCofreResolvido(posicaoCofre);
     }
 
     /** Expõe a memória (ex.: para a UI ler o snapshot do mapa de calor). */

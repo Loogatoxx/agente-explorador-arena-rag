@@ -110,7 +110,10 @@ public class AgenteExplorador {
         boolean sucesso = resposta != null
                 && resposta.has("status")
                 && "sucesso".equalsIgnoreCase(resposta.get("status").getAsString());
-        if (!sucesso) {
+        if (sucesso) {
+            motor.marcarCofreResolvido(cofre.getPosicao());
+            System.out.println("[Agente] Cofre resolvido com sucesso (+HP).");
+        } else {
             motor.marcarCofreFalhado(cofre.getPosicao());
             System.out.println("[Agente] Cofre marcado na lista negra (RAG falhou).");
         }
