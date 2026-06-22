@@ -62,3 +62,23 @@ push e convite do professor). Acrescentei que tenho um colega de grupo:
 - Ficou a faltar apenas a autenticação interativa na `gh` (passo único feito
   pelo próprio utilizador) para depois criar o repositório e fazer push.
 
+---
+
+## Interação #3 — Criação do repositório e primeiro push (2026-06-22)
+
+### O meu Prompt
+Confirmei que a autenticação na `gh` estava feita e autorizei a IA a criar o
+repositório e fazer o push. Ofereci também acesso ao ecrã/controlo do
+computador caso fosse necessário para alguma tarefa.
+
+### A Resposta da IA
+- Verificou o `gh auth status` (conta `Loogatoxx`, scope `repo`).
+- Criou o repositório **privado** `agente-explorador-arena-rag`, configurou o
+  remote `origin` e fez **push** dos 6 commits.
+- Explicou que, para este projeto, não precisa de controlar o ecrã (tudo é
+  feito por terminal), mas guardou a opção para depuração visual futura (ex.:
+  janela Swing).
+- Indicou que o convite do professor terá de ser feito pela web (o GitHub
+  convida por nome de utilizador, não por email).
+
+
