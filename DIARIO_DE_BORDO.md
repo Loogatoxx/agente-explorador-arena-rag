@@ -203,3 +203,41 @@
   este código funciona como *password de cenário* na consola web (Fig. 3 do
   enunciado), que gera um código de sala de 6 caracteres. A confirmar quando se
   quiser fazer testes com telemetria real.
+
+---
+
+## 2026-06-22 — Etapa 6: Modelos de telemetria + ciclo Sense-Think-Act
+*(Prompt pensado pelo Afonso → commits em nome do Afonso.)*
+
+### O que foi feito
+- **Modelos de dados (POJO)** para mapear o JSON da telemetria com Gson:
+  `Coordenada`, `EstadoRobo`, `Cofre`, `RoboRival` e o agregador `Percecao`.
+- Enum `Acao` (MOVER_NORTE/SUL/ESTE/OESTE) com o comando exato do servidor.
+- `MotorHeuristico` (pacote `heuristica`): classe de decisão com `decidir(Percecao)`
+  — por agora um *placeholder*, para a lógica real vir depois.
+- `ArenaClient` ganhou:
+  - `agir(Acao)` / `agir(String)` → `POST /arena/action`;
+  - `percecionarTipado()` → telemetria já convertida para `Percecao`.
+- `AgenteExplorador`: implementado o **ciclo infinito Sense-Think-Act**, com
+  tratamento de lobby (`game_started=false`), fim de jogo (`game_over`), falhas
+  de rede (telemetria `null`), `try-catch` de segurança e **pausa anti-flood de
+  400 ms** no fim de cada iteração.
+- Compilação validada com `mvn compile` (BUILD SUCCESS, 12 classes).
+- **Demonstração**: corrido contra a sala (inativa), o agente arranca, regista,
+  entra em espera no lobby em ciclo e **não rebenta** — exatamente o pretendido.
+
+### Decisões e justificações
+- A **decisão** vive no `MotorHeuristico`, não no `AgenteExplorador`, para manter
+  o orquestrador fino (anti "Classe Deus" / SRP).
+- Enum `Acao` em vez de strings soltas → segurança de tipos.
+- Pausa de **400 ms** (dentro da margem 350-400 ms recomendada contra o Anti-Flood).
+- `percecionar()` (bruto, `JsonObject`) mantém-se a par de `percecionarTipado()`
+  (modelo): o bruto serve para depuração/UI, o tipado para a lógica.
+
+### Dificuldades / Alterações / Abandonos
+- Os **nomes dos campos internos** dos modelos (ex.: `x`/`y`/`hp`) são inferidos
+  do enunciado; ficam marcados nos `@SerializedName` para confirmação fácil
+  quando houver uma sala ativa.
+- O `MotorHeuristico` é, de propósito, um *placeholder* (devolve sempre
+  MOVER_NORTE) até à etapa de heurística — a navegação inteligente (colisões,
+  mapa de calor, atração por alvos, luta/fuga) ainda não foi escrita.

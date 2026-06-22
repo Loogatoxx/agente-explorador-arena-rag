@@ -41,3 +41,27 @@ Pedi para começar a parte de código pelo ponto 1 do plano: a classe
   instanciada de momento (resposta `{"status":"erro", ...}` / `{"error":"Sala
   inválida"}`) — o código está correto, falta uma sala ativa para testes reais.
 
+---
+
+## Interação #2 — Modelos de telemetria + ciclo Sense-Think-Act (2026-06-22)
+
+### O meu Prompt
+Como o professor ainda não ativou a sala, pus essa parte em standby e pedi para
+continuar para o passo mais recomendado a seguir desta etapa. (Prompt pensado
+por mim, Afonso.)
+
+### A Resposta da IA
+- Criou os **modelos POJO** que mapeiam o JSON da telemetria com Gson
+  (`Coordenada`, `EstadoRobo`, `Cofre`, `RoboRival`, `Percecao`) e o enum `Acao`.
+- Criou o `MotorHeuristico` (decisão isolada do orquestrador, para respeitar o
+  SRP e evitar a "Classe Deus") — por agora um *placeholder*.
+- Completou o `ArenaClient` com `agir()` (`POST /arena/action`) e
+  `percecionarTipado()`.
+- Implementou o **ciclo Sense-Think-Act** no `AgenteExplorador`, com lobby,
+  fim de jogo, falhas de rede, `try-catch` e pausa anti-flood de 400 ms.
+- Compilou com Maven e demonstrou em execução que o agente arranca e fica em
+  espera sem rebentar, mesmo com a sala inativa.
+- Explicou que os nomes de campos internos são inferidos do enunciado e ficam
+  fáceis de ajustar quando houver telemetria real.
+
+
