@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |-------|-------|
-| **Número do Grupo** | (a confirmar) |
+| **Número do Grupo** | E |
 | **Aluno** | Afonso Trindade |
 | **Número de Aluno** | 28292 |
 | **Ferramenta de IA** | (a preencher pelo próprio) |

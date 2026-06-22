@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |-------|-------|
-| **Número do Grupo** | (a confirmar) |
+| **Número do Grupo** | E |
 | **Aluno** | Carlos Gameiro |
 | **Número de Aluno** | 28504 |
 | **Ferramenta de IA** | Claude (Claude Code) |
