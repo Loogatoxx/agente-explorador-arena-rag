@@ -81,4 +81,24 @@ computador caso fosse necessário para alguma tarefa.
 - Indicou que o convite do professor terá de ser feito pela web (o GitHub
   convida por nome de utilizador, não por email).
 
+---
+
+## Interação #4 — Convenção de autoria dos commits (2026-06-22)
+
+### O meu Prompt
+Propus uma convenção: no fim de cada prompt eu indico quem o pensou; se for só
+eu, o commit fica no meu nome; se for só o Afonso, no nome dele; se formos os
+dois, fica em coautoria. Perguntei à IA se era uma boa abordagem.
+
+### A Resposta da IA
+- Validou a convenção como boa e honesta (reflete quem pilotou cada parte, que
+  é o que o professor quer avaliar).
+- Acrescentou dois refinamentos: (1) aplicar a mesma regra aos ficheiros de
+  auditoria individuais (o prompt vai para a auditoria de quem o pensou);
+  (2) manter a atribuição fiel à realidade, sem inflacionar números.
+- Explicou o detalhe técnico de `git commit --author` para os commits do Afonso
+  e a manutenção do `Co-Authored-By: Claude` como prova de transparência.
+- Registou a convenção no diário de bordo e aplicou-a já a este commit (pensado
+  por mim, logo em meu nome).
+
 
