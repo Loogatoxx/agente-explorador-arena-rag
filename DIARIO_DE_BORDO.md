@@ -287,3 +287,47 @@
 - Adicionou-se **JUnit 5 + maven-surefire** ao `pom.xml`.
 - A orientação do eixo Y continua por confirmar com sala ativa, mas está
   isolada num único booleano na `Bussola`.
+
+---
+
+## 2026-06-22 — Etapa 8: Pipeline RAG (Ollama + embeddings + ChatML)
+*(Prompt pensado pelo Carlos → commits em nome do Carlos.)*
+
+### O que foi feito
+- **Ollama** instalado (Homebrew) e a correr; modelos descarregados:
+  `nomic-embed-text` (embeddings, 768-dim) e
+  `qwen2.5-coder:0.5b-instruct-q4_K_M` (LLM).
+- Classes novas (pacote `ia`):
+  - `OllamaClient` — `gerarEmbedding()` (`/api/embeddings`) e `gerarTextoRaw()`
+    (`/api/generate` com `raw=true`, temperatura 0.0).
+  - `Vetores` — semelhança de cossenos (pesquisa semântica).
+  - `BaseConhecimento` — store vetorial em RAM + `maisRelevante()`.
+  - `PipelineRag` — orquestra ingestão (download + chunking + embeddings),
+    retrieval (cosseno), geração (ChatML) e submissão (unlock).
+  - `ResultadoRag` (record) — chave + contexto + resposta crua.
+- `ArenaClient` ganhou `descarregarManual()` e `desbloquear(code, ragChunk, llmRaw)`.
+- `AgenteExplorador` integra o RAG no ciclo: quando há cofre sob o agente,
+  resolve via RAG e submete; em falha, marca o cofre na lista negra (o motor
+  força fuga).
+
+### Verificação
+- **Teste em direto** contra o Ollama (manual falso): o cosseno recuperou o
+  chunk certo e o LLM devolveu a chave **`POLY-SEAL`** limpa (sem alucinação).
+- **Testes JUnit**: `VetoresTest` (4) + `PipelineRagTest` (4, chunking/limpeza/
+  ChatML). Total do projeto: **15 testes verdes** (`mvn test`).
+
+### Decisões e justificações
+- **ChatML construído em Java** + `/api/generate raw=true`: envia-se o ChatML
+  tal e qual (com `<|im_start|>system/user/assistant`), demonstrando a técnica
+  pedida no enunciado e forçando o LLM a responder só com a chave.
+- **Temperatura 0.0** → determinismo (anula a criatividade do modelo).
+- Cosseno isolado em `Vetores`, store em `BaseConhecimento`, orquestração em
+  `PipelineRag` → SRP; o `AgenteExplorador` apenas delega.
+
+### Dificuldades / Alterações / Abandonos
+- O nome real do modelo LLM tem o sufixo **`-q4_K_M`** (não o nome curto do
+  enunciado); ajustado no `OllamaClient`.
+- Embeddings via `/api/embeddings` (devolve `embedding`, 768-dim).
+- Sem sala ativa, `indexarManual()`/`desbloquear()` só serão testáveis
+  ponta-a-ponta com uma sala real; a lógica RAG foi validada localmente com um
+  manual falso.

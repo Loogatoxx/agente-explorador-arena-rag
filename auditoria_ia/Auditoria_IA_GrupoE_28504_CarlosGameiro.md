@@ -125,4 +125,30 @@ continuar, confirmando que o commit ficaria nos dois nomes.
   fez a revisão **manualmente** e removeu código morto (`Bussola.oposta()`,
   `ContextoDecisao.direcoesBase()`).
 
+---
+
+## Interação #6 — Pipeline RAG (opção B) (2026-06-22)
+
+### O meu Prompt
+Pedi para avançar com a opção B — o pipeline RAG completo. (Prompt pensado por
+mim, Carlos.)
+
+### A Resposta da IA
+- Instalou o **Ollama** (Homebrew) e descarregou os modelos `nomic-embed-text`
+  e `qwen2.5-coder:0.5b-instruct-q4_K_M`, arrancando o servidor.
+- Criou o pacote `ia`: `OllamaClient` (embeddings + geração ChatML com
+  `raw=true` e temperatura 0), `Vetores` (semelhança de cossenos),
+  `BaseConhecimento` (store vetorial em RAM) e `PipelineRag` (orquestra
+  download → chunking → embeddings → retrieval → ChatML → unlock), mais o
+  record `ResultadoRag`.
+- Acrescentou `descarregarManual()` e `desbloquear()` ao `ArenaClient` e
+  integrou o RAG no ciclo do `AgenteExplorador` (cofre → resolver → unlock →
+  lista negra em falha).
+- **Testou em direto** contra o Ollama (manual falso): o cosseno recuperou o
+  chunk correto e o LLM devolveu `POLY-SEAL` limpo.
+- Escreveu testes JUnit (cosseno, chunking, limpeza de chave, ChatML); o
+  projeto tem agora **15 testes verdes**.
+- Explicou a opção de `/api/generate raw=true` para enviar o ChatML construído
+  em Java tal e qual (a técnica pedida no enunciado).
+
 
