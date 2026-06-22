@@ -9,6 +9,7 @@ import pt.ipt.arena.modelo.Acao;
 import pt.ipt.arena.modelo.Cofre;
 import pt.ipt.arena.modelo.Percecao;
 import pt.ipt.arena.rede.ArenaClient;
+import pt.ipt.arena.ui.PainelMapaCalor;
 
 /**
  * Classe principal (Main) e orquestrador do ciclo de vida do agente.
@@ -38,6 +39,7 @@ public class AgenteExplorador {
         MotorHeuristico motor = new MotorHeuristico(idRobo);
         OllamaClient ollama = new OllamaClient();
         PipelineRag pipeline = new PipelineRag(arena, ollama);
+        PainelMapaCalor painel = PainelMapaCalor.abrirJanela("Telemetria - " + idRobo);
 
         System.out.println("[Agente] A registar '" + idRobo + "' na sala '" + sala + "'...");
         JsonObject registo = arena.registar();
@@ -63,14 +65,22 @@ public class AgenteExplorador {
                 } else if (!percecao.isGameStarted()) {
                     // Jogo ainda não começou: estado de espera (lobby).
                     System.out.println("[Agente] Em espera no lobby (game_started=false)...");
-                } else if (percecao.getCofreSobOAgente() != null) {
-                    // ---------- RAG: cofre sob o agente -> resolver e desbloquear ----------
-                    resolverCofre(percecao.getCofreSobOAgente(), pipeline, motor);
                 } else {
-                    // ---------- THINK (Decisão) + ACT (Ação): navegação heurística ----------
-                    Acao acao = motor.decidir(percecao);
-                    JsonObject resposta = arena.agir(acao);
-                    System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
+                    // ---------- Jogo a decorrer: atualiza o dashboard e decide ----------
+                    if (painel != null) {
+                        painel.atualizar(percecao, motor.getMemoria().snapshotMapaCalor());
+                    }
+
+                    Cofre cofre = percecao.getCofreSobOAgente();
+                    if (cofre != null) {
+                        // RAG: resolver o enigma e desbloquear o cofre.
+                        resolverCofre(cofre, pipeline, motor);
+                    } else {
+                        // THINK (Decisão) + ACT (Ação): navegação heurística.
+                        Acao acao = motor.decidir(percecao);
+                        JsonObject resposta = arena.agir(acao);
+                        System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
+                    }
                 }
             } catch (RuntimeException e) {
                 // Rede de segurança final: um turno mau nunca derruba o agente.
