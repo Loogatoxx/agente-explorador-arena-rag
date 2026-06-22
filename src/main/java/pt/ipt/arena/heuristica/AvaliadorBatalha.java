@@ -4,8 +4,10 @@ import pt.ipt.arena.modelo.Acao;
 import pt.ipt.arena.modelo.Coordenada;
 import pt.ipt.arena.modelo.RoboRival;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Modo Batalha (Battle Royale). Deteta o rival mais próximo; se estiver a menos
@@ -25,6 +27,12 @@ public class AvaliadorBatalha implements AvaliadorAcao {
     /** "A menos de 2 blocos" → distância de Manhattan estritamente menor que 2. */
     private static final int DISTANCIA_DE_ENGAJAMENTO = 2;
 
+    /** Não engaja em combate abaixo deste HP, mesmo contra um rival mais fraco. */
+    private static final int LIMIAR_MINIMO_COMBATE = 40;
+
+    /** Margem de vantagem exigida para atacar (um golpe vale 15 de dano). */
+    private static final int MARGEM_VANTAGEM = 15;
+
     @Override
     public Optional<Acao> avaliar(ContextoDecisao ctx, MemoriaHeuristica memoria, List<Bussola> validas) {
         if (ctx.rivais().isEmpty() || validas.isEmpty()) {
@@ -33,27 +41,47 @@ public class AvaliadorBatalha implements AvaliadorAcao {
 
         Coordenada pos = ctx.minhaPosicao();
         RoboRival alvo = rivalMaisProximo(ctx.rivais(), pos);
-        if (alvo == null) {
+        if (alvo == null || Bussola.manhattan(pos, alvo.getPosicao()) >= DISTANCIA_DE_ENGAJAMENTO) {
             return Optional.empty();
         }
 
-        int distancia = Bussola.manhattan(pos, alvo.getPosicao());
-        if (distancia >= DISTANCIA_DE_ENGAJAMENTO) {
-            return Optional.empty();
-        }
-
-        boolean souMaisForte = ctx.meuHp() > alvo.getHp();
-        if (souMaisForte) {
+        // Ataca só com vantagem CLARA (HP acima do limiar e bem acima do rival).
+        boolean vantagemClara = ctx.meuHp() >= LIMIAR_MINIMO_COMBATE
+                && ctx.meuHp() > alvo.getHp() + MARGEM_VANTAGEM;
+        if (vantagemClara) {
             Bussola passo = Bussola.direcaoQueReduzManhattan(pos, alvo.getPosicao(), validas);
-            return (passo != null) ? Optional.of(passo.paraAcao()) : Optional.empty();
+            if (passo != null) {
+                return Optional.of(passo.paraAcao());
+            }
+        }
+        return fugir(memoria, validas, pos, alvo.getPosicao());
+    }
+
+    /**
+     * Foge do rival. Se conhecer um cofre alcançável e o caminho para lá NÃO nos
+     * aproximar do rival, retira-se a curar (o cofre dá +100 HP); caso contrário,
+     * foge na direção que mais aumenta a distância. Compromete-se com 1 reflexo.
+     */
+    private Optional<Acao> fugir(MemoriaHeuristica memoria, List<Bussola> validas, Coordenada pos, Coordenada rival) {
+        Set<String> cofres = new HashSet<>();
+        for (Coordenada cofre : memoria.getMapa().cofres()) {
+            if (!memoria.cofreEstaNaListaNegra(cofre) && !memoria.cofreResolvido(cofre)) {
+                cofres.add(cofre.chave());
+            }
+        }
+        if (!cofres.isEmpty()) {
+            Bussola paraCura = Pathfinder.primeiroPassoPara(pos, cofres, memoria.celulasBloqueadas());
+            if (paraCura != null && validas.contains(paraCura)
+                    && Bussola.manhattan(paraCura.aplicar(pos), rival) >= Bussola.manhattan(pos, rival)) {
+                memoria.planear(List.of(paraCura.paraAcao()));
+                return Optional.of(paraCura.paraAcao());
+            }
         }
 
-        // Fuga: maximizar a distância ao rival.
-        Bussola fuga = direcaoDeFuga(pos, alvo.getPosicao(), validas);
+        Bussola fuga = direcaoDeFuga(pos, rival, validas);
         if (fuga == null) {
             return Optional.empty();
         }
-        // Compromete-se com a fuga: planeia repeti-la no turno seguinte (reflexo).
         memoria.planear(List.of(fuga.paraAcao()));
         return Optional.of(fuga.paraAcao());
     }
