@@ -92,12 +92,14 @@ class MotorHeuristicoTest {
     }
 
     @Test
-    void naoAtacaComHpBaixoMesmoContraMaisFraco() {
+    void atacaRivalMaisFracoMesmoComHpModerado() {
+        // O benchmark de duelos mostrou que a agressividade vence: matar um rival
+        // mais fraco (um golpe basta) é melhor do que fugir e encaixar golpes.
         MotorHeuristico motor = new MotorHeuristico("eu");
         Acao acao = motor.decidir(percecao(
                 "{\"game_started\":true,\"o_meu_estado\":{\"x\":5,\"y\":5,\"hp\":30},"
                         + "\"outros_robots\":[{\"id\":\"r1\",\"x\":5,\"y\":6,\"hp\":10}]}"));
-        assertNotEquals(Acao.MOVER_SUL, acao, "com HP baixo não deve investir, mesmo contra um rival mais fraco");
+        assertEquals(Acao.MOVER_SUL, acao, "deve atacar um rival mais fraco em vez de fugir");
     }
 
     @Test

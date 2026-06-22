@@ -432,3 +432,29 @@
 ### Decisões e justificações
 - Top-K = 3 (equilíbrio entre contexto e ruído).
 - A retirada para cura usa o mesmo `Pathfinder` da navegação (reutilização).
+
+---
+
+## 2026-06-22 — Etapa 12: Benchmark de duelos e calibração do combate
+*(Continuação do "modo ultracode" — Carlos.)*
+
+### O que foi feito
+- **Simulador de duelos 1v1** (`SimuladorDuelo`): dois motores enfrentam-se numa
+  pequena arena (com curas), permitindo um **sweep** de parâmetros de combate
+  (limiar de HP × margem de vantagem) contra um adversário sempre-agressivo.
+- Parâmetros de combate tornados configuráveis (`AvaliadorBatalha(limiar, margem)`
+  + `MotorHeuristico.comCombate(...)`).
+
+### Descoberta (medida) e decisão
+- O combate **conservador** anterior (limiar=40, margem=15) **perdia muito**:
+  **29 derrotas** em 40 duelos. A melhor fórmula (score = derrotas, mais perto de
+  0) é **agressiva**: **limiar=0, margem=−15 → 4 derrotas, 14 vitórias, 22 empates**.
+- **Porquê**: a igual velocidade, **fugir só encaixa golpes** (−15 sem ripostar),
+  enquanto lutar troca 15-15. Só se foge se o rival estiver claramente mais forte
+  (15+ HP acima), caso em que a retirada para cura ainda se aplica.
+- Adotou-se o novo **default agressivo**; o teste de combate foi ajustado para a
+  nova (e melhor) política. **18 testes verdes**.
+
+### Limitações (honestidade)
+- O sweep é contra **um** tipo de adversário (agressor puro) e num simulador
+  simplificado; é indicativo, não definitivo — mas a razão mecânica generaliza.
