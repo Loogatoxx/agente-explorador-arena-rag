@@ -193,4 +193,25 @@ cálculo. (Prompt pensado por mim, Carlos.)
   robusta da chave) e **combate** (limiar de HP para não suicidar, margem de
   vantagem, retirada para curar). Ficou com **18 testes verdes**.
 
+---
+
+## Interação #9 — Torneio de estratégias (free-for-all) (2026-06-22)
+
+### O meu Prompt
+Pedi para continuar a performar: montar um torneio que testa muitas estratégias
+e elege a mais robusta contra todas as outras, com pontuação precisa, simulador
+**free-for-all multi-bots**, e um visual no fim. Ativei o "ultracode".
+
+### A Resposta da IA
+- (O workflow não estava ativo no contexto; a IA explicou que não o controla e
+  fez tudo inline — o torneio corre em Java, grátis.)
+- Acrescentou a dimensão **Postura** (caçar/neutro/evitar), construiu um
+  **simulador Battle Royale free-for-all** e uma **liga** com pontuação por
+  colocação, sobre muitos seeds (com variância e pior-caso).
+- Descobriu um **paradoxo medido**: em mêlea, a passividade vence (atacar expõe a
+  terceiros), ao contrário do 1v1. O **refinamento** elegeu **EVITAR + margem 30**
+  (média 4.97, 16.7% vitórias, 0% eliminado 1.º), aplicada como novo default.
+- Foi honesta quanto aos limites (simulação vs adversários reais) e travou o
+  ganho num teste. 20 testes verdes. Produziu um gráfico comparativo.
+
 

@@ -458,3 +458,38 @@
 ### Limitações (honestidade)
 - O sweep é contra **um** tipo de adversário (agressor puro) e num simulador
   simplificado; é indicativo, não definitivo — mas a razão mecânica generaliza.
+
+---
+
+## 2026-06-22 — Etapa 13: Torneio free-for-all e estratégia eleita
+*(Continuação do "modo ultracode" — Carlos; o workflow não estava ativo, feito inline.)*
+
+### O que foi feito
+- Nova **dimensão estratégica**: `Postura` (CACAR / NEUTRO / EVITAR) via
+  `AvaliadorPostura` — movimento proativo perante rivais visíveis (não adjacentes).
+- **Simulador Battle Royale free-for-all** (`SimuladorBatalha`): vários bots em
+  simultâneo, com perceção mútua, combate e curas; e uma **liga** que pontua cada
+  estratégia pela colocação (último vivo = melhor), sobre muitos seeds.
+- **Refinamento** (`RefinamentoBatalha`): 18 variantes avaliadas contra um campo
+  fixo de 8 arquétipos.
+
+### Descoberta (medida) — o PARADOXO 1v1 vs mêlea
+- Na **liga de 8 bots**, a **passividade vence em média**: Pacifista 4.17 (melhor),
+  enquanto os agressivos ficam por baixo (Agressor 2.80; eliminado 1.º em 23%).
+  Razão: em mêlea, **atacar = ficar exposto a dano de terceiros**. É o **oposto**
+  do 1v1 (Etapa 12), onde a agressão vencia.
+- **Refinamento → estratégia eleita**: **postura EVITAR + margem 30**
+  (limiar irrelevante): **média 4.97, 16.7% de vitórias, 0% eliminado 1.º**.
+  Vence **o dobro** do pacifista puro (7%) E mantém heurística de combate real
+  (elimina os claramente mais fracos).
+
+### Decisão
+- Adotada como **novo default** do agente (`MotorHeuristico` + `AvaliadorBatalha`
+  passam a (limiar 0, margem 30) + `AvaliadorPostura(EVITAR)`). Teste de regressão
+  `SimuladorBatalhaTest` trava o ganho. **20 testes verdes**.
+- Modos diferentes → defaults diferentes; como o exame de combate é **multi-bot**,
+  escolheu-se o vencedor do **free-for-all**. (O 1v1 fica documentado para contexto.)
+
+### Limitações (honestidade)
+- O torneio é contra os **nossos** arquétipos, num simulador simplificado: é uma
+  boa aproximação do "meta", não a certeza do que farão os colegas.
