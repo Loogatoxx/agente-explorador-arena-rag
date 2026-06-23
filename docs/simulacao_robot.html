@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Replay do Robô — Arena 3D RAG (Grupo E)</title>
+<style>
+  body{margin:0;background:#141417;color:#e6e6e6;font-family:system-ui,-apple-system,sans-serif;}
+  .wrap{max-width:480px;margin:24px auto;padding:0 14px;}
+  h1{font-size:18px;font-weight:600;margin:0 0 4px;}
+  .sub{color:#9a9aa2;font-size:13px;margin-bottom:12px;}
+  canvas{width:100%;border-radius:10px;display:block;background:#1b1b1f;}
+  #info{color:#bdbdc4;font-variant-numeric:tabular-nums;margin:10px 0;font-size:14px;}
+  input[type=range]{width:100%;accent-color:#5aa0f5;}
+  .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  button{background:#2a2a2e;color:#eee;border:1px solid rgba(128,128,128,.35);border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;}
+  button:hover{filter:brightness(1.25);}
+  .leg{color:#9a9aa2;font-size:12px;margin-top:10px;}
+  .stats{color:#9a9aa2;font-size:12px;margin-top:8px;border-top:1px solid rgba(128,128,128,.25);padding-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🤖 O nosso robô na Arena — replay (navegação otimizada)</h1>
+  <div class="sub">Grupo E · mapa acumulado + pathfinding BFS + exploração por fronteiras</div>
+  <canvas id="arena" width="448" height="448"></canvas>
+  <div id="info">Turno 0</div>
+  <input id="slider" type="range" min="0" max="65" value="0">
+  <div class="row">
+    <button id="play">⏸ Pausa</button>
+    <button id="back">⟲ Recomeçar</button>
+    <button id="slow">🐢 Lento</button>
+    <button id="fast">🐇 Rápido</button>
+  </div>
+  <div class="leg">🟦 robô · 🟧 paredes · 🟢 recursos (+20 HP) · 🟡 cofres (+100 HP) · rasto verde = mapa de calor</div>
+  <div class="stats">✓ 20 testes JUnit verdes · Navegação 29/30 cenários (−86,7%) · Combate eleito por torneio free-for-all</div>
+</div>
+<script>
+const R={"n":16,"paredes":[[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[0,9],[0,10],[0,11],[0,12],[0,13],[0,14],[0,15],[1,0],[1,1],[1,3],[1,6],[1,9],[1,15],[2,0],[2,11],[2,14],[2,15],[3,0],[3,15],[4,0],[4,15],[5,0],[5,8],[5,11],[5,14],[5,15],[6,0],[6,2],[6,3],[6,15],[7,0],[7,2],[7,6],[7,10],[7,15],[8,0],[8,5],[8,15],[9,0],[9,8],[9,9],[9,13],[9,15],[10,0],[10,10],[10,11],[10,15],[11,0],[11,6],[11,15],[12,0],[12,6],[12,15],[13,0],[13,2],[13,5],[13,8],[13,15],[14,0],[14,1],[14,11],[14,15],[15,0],[15,1],[15,2],[15,3],[15,4],[15,5],[15,6],[15,7],[15,8],[15,9],[15,10],[15,11],[15,12],[15,13],[15,14],[15,15]],"recursos":[[13,1],[9,6],[10,2],[2,5],[12,5],[9,1]],"cofres":[[12,13],[2,2]],"frames":[{"x":8,"y":8,"hp":300},{"x":8,"y":7,"hp":299},{"x":8,"y":6,"hp":298},{"x":9,"y":6,"hp":250},{"x":9,"y":5,"hp":249},{"x":10,"y":5,"hp":248},{"x":11,"y":5,"hp":247},{"x":12,"y":5,"hp":250},{"x":12,"y":4,"hp":249},{"x":12,"y":3,"hp":248},{"x":12,"y":2,"hp":247},{"x":12,"y":1,"hp":246},{"x":13,"y":1,"hp":250},{"x":12,"y":1,"hp":249},{"x":12,"y":2,"hp":248},{"x":11,"y":2,"hp":247},{"x":10,"y":2,"hp":250},{"x":10,"y":1,"hp":249},{"x":9,"y":1,"hp":250},{"x":9,"y":2,"hp":249},{"x":9,"y":3,"hp":248},{"x":10,"y":3,"hp":247},{"x":11,"y":3,"hp":246},{"x":11,"y":4,"hp":245},{"x":10,"y":4,"hp":244},{"x":9,"y":4,"hp":243},{"x":8,"y":4,"hp":242},{"x":8,"y":3,"hp":241},{"x":8,"y":2,"hp":240},{"x":8,"y":1,"hp":239},{"x":7,"y":1,"hp":238},{"x":6,"y":1,"hp":237},{"x":5,"y":1,"hp":236},{"x":5,"y":2,"hp":235},{"x":4,"y":2,"hp":234},{"x":3,"y":2,"hp":233},{"x":2,"y":2,"hp":250},{"x":2,"y":3,"hp":249},{"x":2,"y":4,"hp":248},{"x":2,"y":5,"hp":250},{"x":3,"y":5,"hp":249},{"x":3,"y":4,"hp":248},{"x":3,"y":3,"hp":247},{"x":4,"y":3,"hp":246},{"x":5,"y":3,"hp":245},{"x":5,"y":4,"hp":244},{"x":6,"y":4,"hp":243},{"x":7,"y":4,"hp":242},{"x":7,"y":3,"hp":241},{"x":7,"y":4,"hp":240},{"x":7,"y":5,"hp":239},{"x":6,"y":5,"hp":238},{"x":6,"y":6,"hp":237},{"x":6,"y":7,"hp":236},{"x":7,"y":7,"hp":235},{"x":7,"y":8,"hp":234},{"x":7,"y":9,"hp":233},{"x":8,"y":9,"hp":232},{"x":8,"y":10,"hp":231},{"x":9,"y":10,"hp":230},{"x":9,"y":11,"hp":229},{"x":9,"y":12,"hp":228},{"x":10,"y":12,"hp":227},{"x":11,"y":12,"hp":226},{"x":12,"y":12,"hp":225},{"x":12,"y":13,"hp":250}],"eventos":[{"t":3,"tipo":"recurso","x":9,"y":6},{"t":7,"tipo":"recurso","x":12,"y":5},{"t":12,"tipo":"recurso","x":13,"y":1},{"t":16,"tipo":"recurso","x":10,"y":2},{"t":18,"tipo":"recurso","x":9,"y":1},{"t":36,"tipo":"cofre","x":2,"y":2},{"t":39,"tipo":"recurso","x":2,"y":5},{"t":65,"tipo":"cofre","x":12,"y":13}]};
+const cv=document.getElementById('arena'),ctx=cv.getContext('2d');
+const N=R.n,CS=cv.width/N;
+const walls=new Set(R.paredes.map(p=>p[0]+','+p[1]));
+const recColl={},cofColl={};
+R.eventos.forEach(e=>{(e.tipo==='recurso'?recColl:cofColl)[e.x+','+e.y]=e.t;});
+let i=0,playing=true,speed=130,timer=null;
+function dot(x,y,col,r){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x*CS+CS/2,y*CS+CS/2,CS*(r||0.34),0,7);ctx.fill();}
+function cofresLeft(idx){let c=R.cofres.length;for(const k in cofColl)if(cofColl[k]<=idx)c--;return c;}
+function draw(){
+  ctx.fillStyle='#1b1b1f';ctx.fillRect(0,0,cv.width,cv.height);
+  const vis={};for(let k=0;k<=i;k++){const f=R.frames[k];const key=f.x+','+f.y;vis[key]=(vis[key]||0)+1;}
+  for(const key in vis){const a=key.split(',');const c=Math.min(vis[key],6)/6;ctx.fillStyle='rgb('+((20+c*30)|0)+','+((50+c*150)|0)+','+((40+c*25)|0)+')';ctx.fillRect(a[0]*CS,a[1]*CS,CS,CS);}
+  ctx.fillStyle='#c8781f';walls.forEach(w=>{const a=w.split(',');ctx.fillRect(a[0]*CS,a[1]*CS,CS,CS);});
+  ctx.strokeStyle='rgba(255,255,255,0.05)';for(let g=0;g<=N;g++){ctx.beginPath();ctx.moveTo(g*CS,0);ctx.lineTo(g*CS,cv.height);ctx.stroke();ctx.beginPath();ctx.moveTo(0,g*CS);ctx.lineTo(cv.width,g*CS);ctx.stroke();}
+  R.recursos.forEach(p=>{const k=p[0]+','+p[1];if(recColl[k]===undefined||recColl[k]>i)dot(p[0],p[1],'#3cc878',0.26);});
+  R.cofres.forEach(p=>{const k=p[0]+','+p[1];if(cofColl[k]===undefined||cofColl[k]>i)dot(p[0],p[1],'#f0c83c',0.34);});
+  const f=R.frames[i];dot(f.x,f.y,'#5aa0f5',0.4);
+  document.getElementById('info').textContent='Turno '+i+'/'+(R.frames.length-1)+'   ·   HP '+f.hp+'   ·   Cofres restantes '+cofresLeft(i);
+  document.getElementById('slider').value=i;
+}
+function startTimer(){clearInterval(timer);timer=setInterval(()=>{if(!playing)return;i++;if(i>=R.frames.length){i=R.frames.length-1;playing=false;document.getElementById('play').textContent='▶ Play';}draw();},speed);}
+document.getElementById('play').addEventListener('click',()=>{playing=!playing;if(playing&&i>=R.frames.length-1)i=0;document.getElementById('play').textContent=playing?'⏸ Pausa':'▶ Play';});
+document.getElementById('back').addEventListener('click',()=>{i=0;playing=true;document.getElementById('play').textContent='⏸ Pausa';draw();});
+document.getElementById('slow').addEventListener('click',()=>{speed=Math.min(420,speed+70);startTimer();});
+document.getElementById('fast').addEventListener('click',()=>{speed=Math.max(40,speed-50);startTimer();});
+document.getElementById('slider').addEventListener('input',e=>{i=+e.target.value;playing=false;document.getElementById('play').textContent='▶ Play';draw();});
+draw();startTimer();
+</script>
+</body>
+</html>

@@ -493,3 +493,22 @@
 ### Limitações (honestidade)
 - O torneio é contra os **nossos** arquétipos, num simulador simplificado: é uma
   boa aproximação do "meta", não a certeza do que farão os colegas.
+
+---
+
+## 2026-06-23 — Etapa 14: Material de apoio (visual + cheat sheet)
+*(Prompt pensado pelo Carlos.)*
+
+### O que foi feito
+- **Gravador de replay** (`SimuladorArena.gravarReplayJson` + `GravadorReplay`):
+  corre o agente otimizado e exporta a partida em JSON.
+- **Simulação visual animada** do robô: `docs/simulacao_robot.html` (abre no
+  browser — ver o robô a explorar, apanhar recursos e abrir os cofres, com
+  play/pausa, passo-a-passo e velocidade). Também mostrada inline na conversa.
+- **Cheat sheet para a defesa oral**: `docs/Cheatsheet_Oral_GrupoE.pdf` —
+  arquitetura, RAG, heurística, combate, números e um bloco de **perguntas
+  prováveis do professor com respostas**.
+
+### Notas
+- Material de apoio à apresentação; não altera o agente. Os 20 testes continuam
+  verdes.

@@ -214,4 +214,23 @@ e elege a mais robusta contra todas as outras, com pontuação precisa, simulado
 - Foi honesta quanto aos limites (simulação vs adversários reais) e travou o
   ganho num teste. 20 testes verdes. Produziu um gráfico comparativo.
 
+---
+
+## Interação #10 — Material de apoio: simulação visual + cheat sheet (2026-06-23)
+
+### O meu Prompt
+Pedi um "cheat code" em PDF para nos ajudar na defesa oral (garantir a nota) e
+uma simulação visual do robô a mover-se na arena, como se estivéssemos à frente
+dela, e ver os testes.
+
+### A Resposta da IA
+- Criou um **gravador de replay** e uma **animação HTML** (`docs/simulacao_robot.html`)
+  que mostra o robô a explorar, apanhar recursos e abrir cofres (play/pausa,
+  passo-a-passo, velocidade) — também mostrada inline.
+- Gerou um **PDF de cheat sheet** (`docs/Cheatsheet_Oral_GrupoE.pdf`) com a
+  arquitetura, o RAG, a heurística, o combate, os números e perguntas prováveis
+  do professor com respostas.
+- Sublinhou que isto é apoio à oral, mas que cada elemento deve mesmo
+  compreender o código (a transparência conta).
+
 
