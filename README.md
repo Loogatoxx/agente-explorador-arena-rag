@@ -46,6 +46,17 @@ calor das células visitadas, paredes, recursos, cofres e rivais, mais o estado
 
 *(render ilustrativo com um estado de jogo de exemplo.)*
 
+## Otimização e benchmarks (local, opcional)
+Ferramentas de simulação em `src/test/.../sim/` (não fazem parte do agente):
+- `BenchmarkNavegacao` / `BenchmarkEvolucao` — pontuam a navegação por versão.
+- `SimuladorBatalha` — liga free-for-all (torneio de estratégias de combate).
+- `OtimizadorLocal` — força bruta no teu PC: corre milhares de duelos e escreve
+  um relatório JSON com a melhor estratégia. Exemplo (após `mvn test-compile`):
+  ```
+  java -cp "target/test-classes:target/classes:$(find ~/.m2 -name 'gson-2.10.1.jar' | head -1)" \
+       pt.ipt.arena.sim.OtimizadorLocal 100 otimizador_resultado.json
+  ```
+
 ## Documentação do projeto
 - `DIARIO_DE_BORDO.md` — histórico cronológico completo do desenvolvimento.
 - `auditoria_ia/` — auditoria individual do uso de IA (prompts e respostas).

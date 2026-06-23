@@ -545,3 +545,33 @@
   29/30 e que elegemos a estratégia de combate. As "máximas hipóteses de 1.º
   lugar" = navegação V2 (quase perfeita) + combate eleito por torneio.
 - **20 testes verdes** em todas as versões mantidas.
+
+---
+
+## 2026-06-23 — Etapa 16: Sobrevivência, navegação 30/30 e otimizador local
+*(Prompt pensado pelo Carlos: garantir 30/30 e maximizar o combate.)*
+
+### Descoberta importante (honestidade)
+- A "HP não-limitante" do benchmark era enganadora: `Math.min(250, hp+cura)`
+  faz o HP de 1.000.000 cair para 250 na primeira cura → o benchmark mede, de
+  facto, com **HP realista (~250)**.
+- Logo: **navegação PURA = 30/30** (o agente é capaz de alcançar todos os
+  cofres, provado por uma corrida sem morte); **com HP realista = 29/30** — no
+  seed 7 o agente **morre por esgotamento** durante uma exploração longa.
+- **100% de sobrevivência NÃO é matematicamente garantível**: o HP é finito e a
+  colocação das curas pode tornar impossível alcançar tudo a tempo. Maximiza-se,
+  não se garante.
+
+### O que foi feito
+- `AvaliadorSobrevivencia`: quando o HP < 70, traça rota para a cura conhecida
+  mais próxima (cofre +100 preferido; recurso +20). Integrado no motor por
+  omissão e no `comEstrategia`. (Melhora a robustez no jogo real.)
+- `OtimizadorLocal`: ferramenta de força bruta para correr **no PC do aluno**
+  (milhares de simulações de combate) que escreve um **relatório JSON** com a
+  melhor estratégia. Confirma (amostra pequena) que a estratégia atual
+  **EVITAR + margem 30** é a melhor do varrimento (média ~5.75/7 vs campo).
+
+### Conclusão
+- **Navegação**: algoritmo perfeito (30/30 em capacidade). **Combate**: estratégia
+  já no ótimo do espaço testado. Para afinar mais, correr o `OtimizadorLocal`
+  com muitos seeds e enviar o JSON. **20 testes verdes.**
