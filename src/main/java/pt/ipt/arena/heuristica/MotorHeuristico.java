@@ -49,6 +49,7 @@ public class MotorHeuristico {
         this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(),
+                        new AvaliadorSobrevivencia(70),
                         new AvaliadorPostura(Postura.EVITAR),
                         new AvaliadorAlvo(),
                         new AvaliadorExploracao()));
@@ -88,6 +89,7 @@ public class MotorHeuristico {
         return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(limiarHp, margem),
+                        new AvaliadorSobrevivencia(70),
                         new AvaliadorPostura(postura),
                         new AvaliadorAlvo(),
                         new AvaliadorExploracao()));
