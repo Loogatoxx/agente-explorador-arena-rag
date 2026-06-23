@@ -192,6 +192,27 @@ public final class SimuladorDuelo {
 
     // ---------- Sweep de parâmetros ----------
 
+    /** Corre {@code seeds} duelos de uma config (limiar/margem) contra um agressor puro. */
+    public static int[] resultadosContraAgressor(int limiar, int margem, int seeds, int n) {
+        int vit = 0;
+        int der = 0;
+        int emp = 0;
+        for (int s = 0; s < seeds; s++) {
+            SimuladorDuelo arena = new SimuladorDuelo(s, n);
+            MotorHeuristico nosso = MotorHeuristico.comCombate("A", limiar, margem);
+            MotorHeuristico agressor = MotorHeuristico.comCombate("B", 0, -1000);
+            int r = arena.duelo(nosso, agressor);
+            if (r > 0) {
+                vit++;
+            } else if (r < 0) {
+                der++;
+            } else {
+                emp++;
+            }
+        }
+        return new int[]{vit, der, emp};
+    }
+
     public static void main(String[] args) {
         int seeds = 40;
         int n = 11;
@@ -206,22 +227,10 @@ public final class SimuladorDuelo {
         String melhor = "";
         for (int limiar : limiares) {
             for (int margem : margens) {
-                int vit = 0;
-                int der = 0;
-                int emp = 0;
-                for (int s = 0; s < seeds; s++) {
-                    SimuladorDuelo arena = new SimuladorDuelo(s, n);
-                    MotorHeuristico nosso = MotorHeuristico.comCombate("A", limiar, margem);
-                    MotorHeuristico agressor = MotorHeuristico.comCombate("B", 0, -1000);
-                    int r = arena.duelo(nosso, agressor);
-                    if (r > 0) {
-                        vit++;
-                    } else if (r < 0) {
-                        der++;
-                    } else {
-                        emp++;
-                    }
-                }
+                int[] res = resultadosContraAgressor(limiar, margem, seeds, n);
+                int vit = res[0];
+                int der = res[1];
+                int emp = res[2];
                 int score = der; // quanto mais perto de 0, melhor
                 System.out.printf("%-8d %-8d | %-6d %-6d %-7d | %-6d%n", limiar, margem, vit, der, emp, score);
                 if (der < melhorDer || (der == melhorDer && vit > melhorVit)) {
