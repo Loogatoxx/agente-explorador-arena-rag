@@ -631,3 +631,36 @@
   Ollama/RAG); navegação **30/30** vs **6/30** (básico) vs **~0** (aleatório).
 - Conclusão honesta: **domínio quase certo no modo Missão**; vantagem **modesta**
   no Battle Royale puro.
+
+---
+
+## 2026-06-23 — Etapa 19: 3 estratégias novas (aspirador, esquiva, canto)
+*(Propostas pensadas pelo Carlos.)*
+
+### O que foi feito (cada uma um avaliador SRP)
+- `AvaliadorAspirador` — rouba curas SEMPRE (cofres +100 antes de recursos +20),
+  mesmo com HP cheio, para esfomear os rivais.
+- `AvaliadorEsquiva` (Vautour 2.0) — foge do **centro de massa** dos rivais
+  (densidade), não só do mais próximo; o "remate" continua no `AvaliadorBatalha`.
+- `AvaliadorCanto` — campa nos cantos (estimados pelas paredes), **só com rivais
+  presentes** (modo Batalha).
+- Testes JUnit (`EstrategiasNovasTest`, 4) + `SimuladorVariantes` (comparador).
+
+### Resultados (vs os 8 arquétipos fortes, média /8)
+- Cada estratégia individual **passa de 5.0**: Aspirador 5.51, Esquiva 5.29,
+  Canto 5.33. O **combo das 3 = ~5.87** (robusto), bem acima dos ~5.0 anteriores.
+
+### ARMADILHA encontrada e corrigida (importante)
+- O combo com o Canto SEM restrição **destruiu a navegação**: 3/30 (ia para os
+  cantos em vez de procurar os cofres). Otimizar o combate **partiu a Missão**.
+- Correção: o `AvaliadorCanto` só atua **com rivais presentes**. A Missão voltou
+  a **29/30** (até melhor: score 9467 < 9746, graças ao aspirador).
+
+### Honestidade (viés do vencedor, outra vez)
+- O "31% vs colegas fracos" a 200 seeds era ruído; robustamente fica **~27%**
+  (a sobrevivência é igualitária contra bots fracos). O ganho REAL e robusto é
+  contra adversários FORTES (média /8: 5.0 → ~5.87).
+
+### Decisão
+- Combo adotado como **default** (melhor vs fortes, navegação ligeiramente
+  melhor, igual vs fracos). **24 testes verdes.**
