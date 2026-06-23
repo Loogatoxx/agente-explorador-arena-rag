@@ -34,10 +34,11 @@ public class AvaliadorBatalha implements AvaliadorAcao {
     private final int margemVantagem;
 
     public AvaliadorBatalha() {
-        // Defaults AGRESSIVOS escolhidos pelo benchmark de duelos (SimuladorDuelo):
-        // bate-se enquanto não estiver claramente mais fraco (15+ HP abaixo), sem
-        // fugir por pânico a baixo HP — fugir a igual velocidade só encaixa golpes.
-        this(0, -15);
+        // Default eleito pelo TORNEIO free-for-all (SimuladorBatalha): só atacar
+        // com vantagem CLARA (30+ HP). Em mêlea, atacar sem grande vantagem expõe
+        // a dano de terceiros; a seletividade sobrevive e ainda elimina os fracos.
+        // (Nota: em 1v1 puro, ser mais agressivo era melhor — ver SimuladorDuelo.)
+        this(0, 30);
     }
 
     public AvaliadorBatalha(int limiarMinimoCombate, int margemVantagem) {

@@ -43,9 +43,13 @@ public class MotorHeuristico {
      * atração a alvos por BFS sobre o mapa acumulado e exploração por fronteiras.
      */
     public MotorHeuristico(String idRobo) {
+        // Estratégia eleita pelo torneio free-for-all (SimuladorBatalha/Refinamento):
+        // combate seletivo (AvaliadorBatalha = vantagem 30+) + postura EVITAR
+        // (afasta-se proativamente da mêlea). Sobrevive E elimina oportunisticamente.
         this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(),
+                        new AvaliadorPostura(Postura.EVITAR),
                         new AvaliadorAlvo(),
                         new AvaliadorExploracao()));
     }
@@ -72,6 +76,19 @@ public class MotorHeuristico {
         return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(limiarHp, margem),
+                        new AvaliadorAlvo(),
+                        new AvaliadorExploracao()));
+    }
+
+    /**
+     * Estratégia completa para o torneio: parâmetros de combate (limiar/margem) +
+     * {@link Postura} proativa perante rivais visíveis (caçar/neutro/evitar).
+     */
+    public static MotorHeuristico comEstrategia(String idRobo, int limiarHp, int margem, Postura postura) {
+        return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(new AvaliadorReflexos(),
+                        new AvaliadorBatalha(limiarHp, margem),
+                        new AvaliadorPostura(postura),
                         new AvaliadorAlvo(),
                         new AvaliadorExploracao()));
     }
