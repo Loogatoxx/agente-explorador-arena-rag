@@ -43,15 +43,16 @@ public class MotorHeuristico {
      * atração a alvos por BFS sobre o mapa acumulado e exploração por fronteiras.
      */
     public MotorHeuristico(String idRobo) {
-        // Estratégia "abutre" eleita pelo OTIMIZADOR AUTOMATICO (hill-climbing):
-        // postura EVITAR (foge da mêlea) + combate quase só por REMATE (abate quem
-        // morre a 1 golpe) + sobrevivência (cura quando o HP baixa). ~4.985/8 vs o campo.
+        // Estratégia "abutre completo" (a melhor medida em simulação, ~6.0/8 vs o
+        // campo): combate por REMATE + ASPIRADOR de curas (esfomeia os rivais) +
+        // ESQUIVA tática da densidade inimiga + CAMPEIRO dos cantos como recurso.
         this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(),
-                        new AvaliadorSobrevivencia(70),
-                        new AvaliadorPostura(Postura.EVITAR),
+                        new AvaliadorAspirador(),
+                        new AvaliadorEsquiva(),
                         new AvaliadorAlvo(),
+                        new AvaliadorCanto(),
                         new AvaliadorExploracao()));
     }
 
