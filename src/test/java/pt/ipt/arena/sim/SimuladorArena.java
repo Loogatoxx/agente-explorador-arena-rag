@@ -227,6 +227,65 @@ public class SimuladorArena {
         return visitadas.size();
     }
 
+    /** Corre uma partida e grava um replay (JSON) para visualização animada. */
+    public String gravarReplayJson(MotorHeuristico motor, int maxTurnos) {
+        StringBuilder paredes = new StringBuilder();
+        for (int i = 0; i < largura; i++) {
+            for (int j = 0; j < altura; j++) {
+                if (parede[i][j]) {
+                    juntar(paredes, "[" + i + "," + j + "]");
+                }
+            }
+        }
+        String recIni = celulasJson(recursos);
+        String cofIni = celulasJson(cofres);
+        StringBuilder frames = new StringBuilder();
+        StringBuilder eventos = new StringBuilder();
+        juntar(frames, "{\"x\":" + x + ",\"y\":" + y + ",\"hp\":" + hp + "}");
+        for (int t = 1; t <= maxTurnos; t++) {
+            Set<String> recAntes = new HashSet<>(recursos);
+            Set<String> cofAntes = new HashSet<>(cofres);
+            aplicar(motor.decidir(perceber()), motor);
+            for (String k : recAntes) {
+                if (!recursos.contains(k)) {
+                    juntar(eventos, evento(t, "recurso", k));
+                }
+            }
+            for (String k : cofAntes) {
+                if (!cofres.contains(k)) {
+                    juntar(eventos, evento(t, "cofre", k));
+                }
+            }
+            juntar(frames, "{\"x\":" + x + ",\"y\":" + y + ",\"hp\":" + hp + "}");
+            if (todosCofresAlcancados() || hp <= 0) {
+                break;
+            }
+        }
+        return "{\"n\":" + largura + ",\"paredes\":[" + paredes + "],\"recursos\":[" + recIni
+                + "],\"cofres\":[" + cofIni + "],\"frames\":[" + frames + "],\"eventos\":[" + eventos + "]}";
+    }
+
+    private static void juntar(StringBuilder sb, String item) {
+        if (sb.length() > 0) {
+            sb.append(',');
+        }
+        sb.append(item);
+    }
+
+    private static String celulasJson(Set<String> cells) {
+        StringBuilder sb = new StringBuilder();
+        for (String k : cells) {
+            String[] p = k.split(",");
+            juntar(sb, "[" + p[0] + "," + p[1] + "]");
+        }
+        return sb.toString();
+    }
+
+    private static String evento(int t, String tipo, String cell) {
+        String[] p = cell.split(",");
+        return "{\"t\":" + t + ",\"tipo\":\"" + tipo + "\",\"x\":" + p[0] + ",\"y\":" + p[1] + "}";
+    }
+
     public int px() {
         return x;
     }
