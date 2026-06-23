@@ -43,9 +43,9 @@ public class MotorHeuristico {
      * atração a alvos por BFS sobre o mapa acumulado e exploração por fronteiras.
      */
     public MotorHeuristico(String idRobo) {
-        // Estratégia eleita pelo torneio free-for-all (SimuladorBatalha/Refinamento):
-        // combate seletivo (AvaliadorBatalha = vantagem 30+) + postura EVITAR
-        // (afasta-se proativamente da mêlea). Sobrevive E elimina oportunisticamente.
+        // Estratégia "abutre" eleita pelo OTIMIZADOR AUTOMATICO (hill-climbing):
+        // postura EVITAR (foge da mêlea) + combate quase só por REMATE (abate quem
+        // morre a 1 golpe) + sobrevivência (cura quando o HP baixa). ~4.985/8 vs o campo.
         this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
                         new AvaliadorBatalha(),
@@ -86,9 +86,15 @@ public class MotorHeuristico {
      * {@link Postura} proativa perante rivais visíveis (caçar/neutro/evitar).
      */
     public static MotorHeuristico comEstrategia(String idRobo, int limiarHp, int margem, Postura postura) {
+        return comEstrategiaCompleta(idRobo, limiarHp, margem, postura, false);
+    }
+
+    /** Estratégia completa, incluindo o "remate" (abater rivais a 1 golpe). Para o otimizador. */
+    public static MotorHeuristico comEstrategiaCompleta(String idRobo, int limiarHp, int margem,
+                                                        Postura postura, boolean remate) {
         return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(new AvaliadorReflexos(),
-                        new AvaliadorBatalha(limiarHp, margem),
+                        new AvaliadorBatalha(limiarHp, margem, remate),
                         new AvaliadorSobrevivencia(70),
                         new AvaliadorPostura(postura),
                         new AvaliadorAlvo(),

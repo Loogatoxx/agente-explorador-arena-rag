@@ -33,17 +33,25 @@ public class AvaliadorBatalha implements AvaliadorAcao {
     /** Margem de vantagem exigida para atacar (um golpe vale 15 de dano). */
     private final int margemVantagem;
 
+    /** "Remate": abater de graça um rival adjacente que morre num só golpe (<=15 HP). */
+    private final boolean remate;
+
     public AvaliadorBatalha() {
-        // Default eleito pelo TORNEIO free-for-all (SimuladorBatalha): só atacar
-        // com vantagem CLARA (30+ HP). Em mêlea, atacar sem grande vantagem expõe
-        // a dano de terceiros; a seletividade sobrevive e ainda elimina os fracos.
-        // (Nota: em 1v1 puro, ser mais agressivo era melhor — ver SimuladorDuelo.)
-        this(0, 30);
+        // Default eleito pelo OTIMIZADOR AUTOMATICO (OtimizadorAuto, validado a 200
+        // seeds): margem alta (quase nunca inicia luta) + REMATE (abate rivais que
+        // morrem num so golpe, <=15 HP). Media ~4.985/8 vs o campo (era 4.75).
+        // Estrategia "abutre": sobrevive a melea e fica com os abates de graca.
+        this(0, 90, true);
     }
 
     public AvaliadorBatalha(int limiarMinimoCombate, int margemVantagem) {
+        this(limiarMinimoCombate, margemVantagem, false);
+    }
+
+    public AvaliadorBatalha(int limiarMinimoCombate, int margemVantagem, boolean remate) {
         this.limiarMinimoCombate = limiarMinimoCombate;
         this.margemVantagem = margemVantagem;
+        this.remate = remate;
     }
 
     @Override
@@ -56,6 +64,14 @@ public class AvaliadorBatalha implements AvaliadorAcao {
         RoboRival alvo = rivalMaisProximo(ctx.rivais(), pos);
         if (alvo == null || Bussola.manhattan(pos, alvo.getPosicao()) >= DISTANCIA_DE_ENGAJAMENTO) {
             return Optional.empty();
+        }
+
+        // Remate: rival ao alcance que morre com um só golpe (<=15 HP) -> abate (kill grátis).
+        if (remate && alvo.getHp() <= 15) {
+            Bussola golpe = Bussola.direcaoQueReduzManhattan(pos, alvo.getPosicao(), validas);
+            if (golpe != null) {
+                return Optional.of(golpe.paraAcao());
+            }
         }
 
         // Ataca só com vantagem CLARA (HP acima do limiar e bem acima do rival).
