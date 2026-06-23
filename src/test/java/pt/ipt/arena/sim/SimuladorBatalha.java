@@ -62,16 +62,22 @@ public final class SimuladorBatalha {
         final int limiar;
         final int margem;
         final Postura postura;
+        final boolean remate;
 
         public Arquetipo(String nome, int limiar, int margem, Postura postura) {
+            this(nome, limiar, margem, postura, false);
+        }
+
+        public Arquetipo(String nome, int limiar, int margem, Postura postura, boolean remate) {
             this.nome = nome;
             this.limiar = limiar;
             this.margem = margem;
             this.postura = postura;
+            this.remate = remate;
         }
 
         MotorHeuristico motor() {
-            return MotorHeuristico.comEstrategia(nome, limiar, margem, postura);
+            return MotorHeuristico.comEstrategiaCompleta(nome, limiar, margem, postura, remate);
         }
     }
 

@@ -575,3 +575,28 @@
 - **Navegação**: algoritmo perfeito (30/30 em capacidade). **Combate**: estratégia
   já no ótimo do espaço testado. Para afinar mais, correr o `OtimizadorLocal`
   com muitos seeds e enviar o JSON. **20 testes verdes.**
+
+---
+
+## 2026-06-23 — Etapa 17: ML automático, levier "remate" e o viés do vencedor
+*(Prompt pensado pelo Carlos: passar dos 4.9, e ML auto-ajustável.)*
+
+### O que foi feito
+- **Levier "remate"** (`AvaliadorBatalha` 3 args): abate de graça um rival
+  adjacente que morre num só golpe (<=15 HP) — kills sem risco.
+- **`OtimizadorAuto`**: otimizador **automático** (hill-climbing com reinícios
+  aleatórios), SEM grelha predefinida — parte de configs, muta o genoma
+  (limiar/margem/postura/remate), sobe sempre para o melhor vizinho e recomeça.
+  **Auto-ajusta-se** (a "ML local" pedida).
+
+### Lição honesta — o VIÉS DO VENCEDOR
+- A mesma config deu médias diferentes consoante a amostra: **8 seeds → 5.75**,
+  **80 seeds → 5.125**, **200 seeds → 4.985**. Quando se escolhe o "melhor" de
+  várias estimativas ruidosas, **sobrestima-se** (winner's curse). A verdade
+  robusta (200 seeds) é **~4.985**. O 5.75 que citei antes era ruído — assumido.
+
+### Decisão
+- Novo default ("abutre"): **EVITAR + margem 90 (quase nunca inicia) + remate**.
+  Média **4.985/8** vs o campo (era 4.750) → **+5%**. Muito perto de 5, mas não
+  robustamente acima — é, ao que parece, o teto deste campo/métrica.
+- **20 testes verdes** (teste de combate atualizado para o "remate").

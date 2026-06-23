@@ -92,15 +92,14 @@ class MotorHeuristicoTest {
     }
 
     @Test
-    void naoAtacaSemVantagemClara() {
-        // Estratégia eleita pelo torneio free-for-all: só atacar com vantagem CLARA
-        // (30+ HP). Aqui a vantagem é só 20 (30 vs 10) → não engaja (evita dano de
-        // terceiros na mêlea).
+    void rematarRivalQuaseMorto() {
+        // Com o "remate" (default do otimizador), um rival adjacente que morre num
+        // só golpe (<=15 HP) é abatido de graça — mesmo sem grande vantagem de HP.
         MotorHeuristico motor = new MotorHeuristico("eu");
         Acao acao = motor.decidir(percecao(
                 "{\"game_started\":true,\"o_meu_estado\":{\"x\":5,\"y\":5,\"hp\":30},"
                         + "\"outros_robots\":[{\"id\":\"r1\",\"x\":5,\"y\":6,\"hp\":10}]}"));
-        assertNotEquals(Acao.MOVER_SUL, acao, "sem vantagem clara (>30 HP) não deve investir");
+        assertEquals(Acao.MOVER_SUL, acao, "deve rematar (abater) o rival que morre a 1 golpe");
     }
 
     @Test
