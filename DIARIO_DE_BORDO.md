@@ -512,3 +512,36 @@
 ### Notas
 - Material de apoio à apresentação; não altera o agente. Os 20 testes continuam
   verdes.
+
+---
+
+## 2026-06-23 — Etapa 15: Pontuação da evolução (todas as versões)
+*(Prompt pensado pelo Carlos.)*
+
+### O que foi feito
+- `BenchmarkEvolucao`: pontua cada versão da NAVEGAÇÃO no mesmo conjunto de 30
+  labirintos (score = turnos; menor = melhor), de forma determinista.
+
+### Resultados (navegação)
+| Versão | Cenários resolvidos | Score (menor = melhor) |
+|---|---|---|
+| V0 — placeholder (só MOVER_NORTE) | 0/30 | 90 000 |
+| V1 — clássico (guloso, só radar) | 6/30 | 73 116 |
+| V2 — otimizado (mapa + BFS + fronteiras) | **29/30** | **9 746** |
+
+- Estável e determinista (re-execução dá o mesmo). O diagnóstico do único
+  cenário-limite (seed 7) mostra que o agente **chega a todos os cofres**
+  (cofresRestantes=0) — ou seja, V2 é **capaz** de 30/30; é um caso no limite do
+  orçamento de turnos.
+
+### Os 8 arquétipos de combate (versões tentadas, não todas mantidas)
+- Já pontuados na Etapa 13 (liga free-for-all): colocação média de 2.80
+  (Agressor) a 4.17 (Pacifista); a estratégia **eleita** (Evitar + margem 30)
+  fica em **4.97**.
+
+### "Algoritmo perfeito" — a forma de o obter
+- O método é o **ciclo simulador-driven**: medir (benchmark) → ajustar →
+  re-medir → travar com teste de regressão. Foi assim que passámos de 0/30 para
+  29/30 e que elegemos a estratégia de combate. As "máximas hipóteses de 1.º
+  lugar" = navegação V2 (quase perfeita) + combate eleito por torneio.
+- **20 testes verdes** em todas as versões mantidas.

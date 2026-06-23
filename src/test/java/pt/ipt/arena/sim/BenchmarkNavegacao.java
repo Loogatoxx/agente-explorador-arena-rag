@@ -4,6 +4,10 @@ import pt.ipt.arena.heuristica.MotorHeuristico;
 import pt.ipt.arena.modelo.Acao;
 import pt.ipt.arena.modelo.Percecao;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
 /**
  * Benchmark A/B do motor de navegação: corre a configuração "clássica" (gulosa,
  * sem mapa/pathfinding) e a "otimizada" (mapa acumulado + BFS + fronteiras) nos
@@ -51,6 +55,33 @@ public final class BenchmarkNavegacao {
             }
         }
         return -1;
+    }
+
+    /** Pontua uma versão (fábrica de motor) na navegação: {resolvidos, score}. */
+    public static int[] pontuar(Supplier<MotorHeuristico> fabrica) {
+        int resolvidos = 0;
+        int score = 0;
+        for (int s = 0; s < SEEDS; s++) {
+            int t = correr(novo(s), fabrica.get());
+            if (t > 0) {
+                resolvidos++;
+                score += t;
+            } else {
+                score += MAX_TURNOS;
+            }
+        }
+        return new int[]{resolvidos, score};
+    }
+
+    /** Lista os seeds que uma versão NÃO resolve (para diagnóstico). */
+    public static List<Integer> seedsQueFalham(Supplier<MotorHeuristico> fabrica) {
+        List<Integer> falhas = new ArrayList<>();
+        for (int s = 0; s < SEEDS; s++) {
+            if (correr(novo(s), fabrica.get()) <= 0) {
+                falhas.add(s);
+            }
+        }
+        return falhas;
     }
 
     public static Sumario[] correrTudo(boolean imprimir) {
