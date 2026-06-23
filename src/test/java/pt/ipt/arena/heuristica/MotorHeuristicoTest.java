@@ -92,14 +92,15 @@ class MotorHeuristicoTest {
     }
 
     @Test
-    void atacaRivalMaisFracoMesmoComHpModerado() {
-        // O benchmark de duelos mostrou que a agressividade vence: matar um rival
-        // mais fraco (um golpe basta) é melhor do que fugir e encaixar golpes.
+    void naoAtacaSemVantagemClara() {
+        // Estratégia eleita pelo torneio free-for-all: só atacar com vantagem CLARA
+        // (30+ HP). Aqui a vantagem é só 20 (30 vs 10) → não engaja (evita dano de
+        // terceiros na mêlea).
         MotorHeuristico motor = new MotorHeuristico("eu");
         Acao acao = motor.decidir(percecao(
                 "{\"game_started\":true,\"o_meu_estado\":{\"x\":5,\"y\":5,\"hp\":30},"
                         + "\"outros_robots\":[{\"id\":\"r1\",\"x\":5,\"y\":6,\"hp\":10}]}"));
-        assertEquals(Acao.MOVER_SUL, acao, "deve atacar um rival mais fraco em vez de fugir");
+        assertNotEquals(Acao.MOVER_SUL, acao, "sem vantagem clara (>30 HP) não deve investir");
     }
 
     @Test
