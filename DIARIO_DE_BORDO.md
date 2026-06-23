@@ -600,3 +600,34 @@
   Média **4.985/8** vs o campo (era 4.750) → **+5%**. Muito perto de 5, mas não
   robustamente acima — é, ao que parece, o teto deste campo/métrica.
 - **20 testes verdes** (teste de combate atualizado para o "remate").
+
+---
+
+## 2026-06-23 — Etapa 18: Simulação vs colegas "mínimo" (previsão vs realidade)
+*(Prompt pensado pelo Carlos: estimar as hipóteses contra a turma.)*
+
+### O que foi feito
+- `AvaliadorAleatorio` (bot que só faz movimentos válidos ao acaso) +
+  `SimuladorClasse`: NOSSO algoritmo num free-for-all contra 7 colegas "mínimo"
+  (2 aleatórios + 3 básicos pacifistas + 2 básicos agressivos), 200 partidas.
+
+### Resultado (Battle Royale / sobrevivência)
+| Bot | Colocação média /7 | 1.º lugar |
+|---|---|---|
+| **NOSSO** | 4.70 | **27.5%** |
+| aleatório | 4.72 | 23.0% |
+| básico pacifista | 2.67 | 5.0% |
+| básico agressivo | 2.11 | 5.0% |
+
+### Lição honesta — previsão vs realidade
+- **Previ 55% de vitória; a simulação deu 27.5%** — sobrestimei o combate **2x**.
+- A métrica de SOBREVIVÊNCIA é pouco discriminante: um bot **aleatório sobrevive
+  quase tão bem** (não se arrisca). A nossa vantagem de combate é **modesta**
+  (27.5% vs 12.5% do acaso, ~2.2×), não esmagadora.
+
+### A OUTRA face (onde dominamos mesmo)
+- Esta simulação **ignora a MISSÃO** (cofres/RAG/navegação). Aí a vantagem é
+  enorme: **só nós abrimos cofres** (pipeline RAG — um colega "mínimo" não tem
+  Ollama/RAG); navegação **30/30** vs **6/30** (básico) vs **~0** (aleatório).
+- Conclusão honesta: **domínio quase certo no modo Missão**; vantagem **modesta**
+  no Battle Royale puro.

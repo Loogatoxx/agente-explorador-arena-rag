@@ -375,6 +375,35 @@ public final class SimuladorBatalha {
         return new double[]{soma / seeds, 100.0 * primeiros / seeds, 100.0 * ultimos / seeds};
     }
 
+    /** Avalia "nosso" contra um campo de adversários arbitrários: {média, 1ºs %, últimos %}. */
+    public static double[] avaliarContra(java.util.function.Supplier<MotorHeuristico> nosso,
+                                         List<java.util.function.Supplier<MotorHeuristico>> adversarios,
+                                         int seeds, int n, int nRecursos, int nCofres) {
+        int k = adversarios.size() + 1;
+        double soma = 0;
+        int primeiros = 0;
+        int ultimos = 0;
+        for (int s = 0; s < seeds; s++) {
+            SimuladorBatalha arena = new SimuladorBatalha(s, n, nRecursos, nCofres);
+            List<int[]> starts = arena.posicoesIniciais(k, s);
+            List<Bot> bots = new ArrayList<>();
+            bots.add(new Bot("NOSSO", nosso.get(), starts.get(0)[0], starts.get(0)[1]));
+            for (int a = 0; a < adversarios.size(); a++) {
+                int[] st = starts.get(a + 1);
+                bots.add(new Bot("adv" + a, adversarios.get(a).get(), st[0], st[1]));
+            }
+            int place = arena.jogar(bots).indexOf(bots.get(0));
+            soma += (k - 1 - place);
+            if (place == 0) {
+                primeiros++;
+            }
+            if (place == k - 1) {
+                ultimos++;
+            }
+        }
+        return new double[]{soma / seeds, 100.0 * primeiros / seeds, 100.0 * ultimos / seeds};
+    }
+
     public static void main(String[] args) {
         List<Arquetipo> pool = campoPadrao();
         System.out.println("=== Liga free-for-all (" + pool.size() + " bots, 60 seeds, arena 17x17) ===");
