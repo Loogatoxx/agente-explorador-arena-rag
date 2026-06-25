@@ -85,7 +85,7 @@ public class MotorHeuristico {
      * de Q-Learning ({@link AvaliadorQ}). A cadeia tem só o agente Q — sem regras
      * heurísticas — para medir honestamente o que a aprendizagem descobre.
      */
-    public static MotorHeuristico comQ(AvaliadorQ agenteQ) {
+    public static MotorHeuristico comQ(AgenteQ agenteQ) {
         return new MotorHeuristico("Q", new MemoriaHeuristica(), new FiltroColisoes(),
                 List.of(agenteQ));
     }

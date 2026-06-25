@@ -22,12 +22,12 @@ import java.util.Random;
  * sobreviver = exatamente a boa colocação em battle royale. O bot tende a
  * redescobrir sozinho a meta evasiva-aproveitadora.
  */
-public class AvaliadorQ implements AvaliadorAcao {
+public class AvaliadorQ implements AgenteQ {
 
     // ---- Pesos da recompensa (afináveis) ----
     private static final double PESO_HP = 1.0;
     private static final double SOBREVIVER = 0.5;
-    private static final double MORTE = 50.0;
+    private static final double MORTE_OU_VITORIA = 8.0; // peso da recompensa terminal por colocação
 
     private final TabelaQ tabela;
     private final boolean treino;
@@ -83,10 +83,12 @@ public class AvaliadorQ implements AvaliadorAcao {
         return Optional.of(EstadoQ.ACOES[acao].paraAcao());
     }
 
-    /** Aplica a recompensa terminal ao fim do episódio (chamado pelo treinador). */
-    public void fimEpisodio(boolean morreu) {
-        if (treino && morreu && estadoAnterior != null && acaoAnterior >= 0) {
-            tabela.atualizarTerminal(estadoAnterior, acaoAnterior, -MORTE);
+    /** Recompensa terminal proporcional à colocação final (alinha com o objetivo). */
+    @Override
+    public void fimEpisodio(int colocacao, int total) {
+        if (treino && estadoAnterior != null && acaoAnterior >= 0) {
+            double r = MORTE_OU_VITORIA * (total - 1 - colocacao);
+            tabela.atualizarTerminal(estadoAnterior, acaoAnterior, r);
         }
     }
 
