@@ -778,3 +778,29 @@ agente **salta** ~R+1 casas sem deixar buracos. `DEFAULT_RAIO_VISAO = 3`.
 - Otimização **1v1** e **battle royale** contra vários perfis de adversário +
   random (estender `SimuladorDuelo`/free-for-all). Carlos quer que NÃO se lance
   nada de início — só estimar a potência e esperar.
+
+## 2026-06-25 — Etapa 23: MISSÃO COMPLETA AO VIVO (4/4) + controlo autónomo do browser
+
+**Prompt (Carlos):** fazer TODOS os testes reais no servidor; se criar salas à mão
+for demorado, automatizar (controlo do PC / outro browser — abriu o Opera).
+
+### Automatização do lançamento de salas
+- Computer-use NÃO digita em browsers (Safari/Opera/Chrome = tier "read").
+- API do site é NiceGUI (socket.io), sem REST para criar/START.
+- Solução: **extensão "Claude in Chrome"** (instalada + ligada). Com ela piloto
+  o DOM: escrevo a password do cenário, clico "GERAR CÓDIGO DE SALA", e dou START.
+- Detalhe importante: o START só "pega" depois de **recarregar a página** com o
+  robô já registado (socket do monitor estava a ficar preso). Sequência fiável:
+  criar sala → lançar agente → recarregar página → INICIAR OPERAÇÃO.
+
+### Teste real (sala 411372, Treino Individual / Missão de Infiltração, 4 cofres)
+- O nosso `grupoE_otimo` (exploração aos saltos + RAG corrigido) **concluiu a
+  missão: 4/4 cofres** em ~25 s (64 turnos). Histórico oficial do servidor:
+  `DESBLOQUEOU COFRE [Terminal_Plasma_1..4]` com as chaves **XTR-99** e
+  **VALVULA-ALT**; `🏁 MISSÃO CONCLUÍDA`. Unlock devolveu `{"status":"sucesso"}`.
+- Validação ponta-a-ponta no servidor real: navegação + radar + RAG + unlock + HP.
+
+### Nota (combate)
+- A password `aluno_treino_2026` só gera missões **individuais** (infiltração).
+  Logo, 1v1 / battle royale REAIS não são testáveis com ela — essa otimização
+  faz-se em **simulação** (simuladores de duelo/free-for-all já existentes).

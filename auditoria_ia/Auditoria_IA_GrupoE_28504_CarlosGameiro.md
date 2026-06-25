@@ -286,4 +286,28 @@ para não repetir erros (lembrei o guloso que fez 6/30).
   cofres (o mesmo erro do guloso). Validar sempre **30/30 / 120/120** antes de
   aceitar mais velocidade, e ancorar o parâmetro na medição real (raio = 3).
 
+---
+
+## Interação #13 — Testes reais no servidor + browser autónomo (2026-06-25)
+
+### O meu Prompt
+Pedi para fazer TODOS os testes reais no servidor e, se criar salas à mão fosse
+demorado, para automatizar (controlo do meu PC; abri o Opera; tentar outro
+browser se o Safari bloqueasse).
+
+### A Resposta da IA
+- Explicou que nenhum browser é controlável por captura de ecrã (lê mas não
+  escreve) e que a solução é a **extensão Claude in Chrome**. Guiou a instalação,
+  e depois **pilotou o Chrome** para criar a sala (password do cenário → "GERAR
+  CÓDIGO DE SALA") e dar START (com um reload para destravar o socket).
+- Lançou o nosso agente otimizado e **a missão foi concluída AO VIVO: 4/4 cofres**
+  (chaves XTR-99 e VALVULA-ALT) em ~25 s, com `🏁 MISSÃO CONCLUÍDA` no histórico
+  oficial do servidor.
+- Avisou que a password de treino só gera missões **individuais**; combate
+  1v1/battle royale reais não dão para testar com ela (fica para simulação).
+
+### O que retive
+- A automação de browser precisa da extensão certa (não basta "ver" o ecrã).
+- Validação ponta-a-ponta no servidor real é o teste que mais conta — e passou.
+
 
