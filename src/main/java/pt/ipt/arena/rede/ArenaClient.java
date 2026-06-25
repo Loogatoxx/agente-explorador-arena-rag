@@ -1,6 +1,8 @@
 package pt.ipt.arena.rede;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -15,6 +17,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * Cliente HTTP dedicado exclusivamente à comunicação REST com o servidor
@@ -106,10 +109,34 @@ public class ArenaClient {
             return null;
         }
         try {
+            normalizarOutrosRobots(json);
             return GSON.fromJson(json, Percecao.class);
         } catch (RuntimeException e) {
             System.err.println("[ArenaClient] Não foi possível mapear a telemetria: " + e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * O servidor real envia {@code outros_robots} como um dicionário
+     * {@code {id: {estado}}}, mas o nosso modelo (e os simuladores) usam uma
+     * lista. Converte o dicionário em lista (injetando o id a partir da chave)
+     * antes do mapeamento Gson. Se já for lista, não toca em nada.
+     */
+    private static void normalizarOutrosRobots(JsonObject json) {
+        JsonElement outros = json.get("outros_robots");
+        if (outros != null && outros.isJsonObject()) {
+            JsonArray lista = new JsonArray();
+            for (Map.Entry<String, JsonElement> entrada : outros.getAsJsonObject().entrySet()) {
+                if (entrada.getValue().isJsonObject()) {
+                    JsonObject rival = entrada.getValue().getAsJsonObject();
+                    if (!rival.has("id")) {
+                        rival.addProperty("id", entrada.getKey());
+                    }
+                    lista.add(rival);
+                }
+            }
+            json.add("outros_robots", lista);
         }
     }
 

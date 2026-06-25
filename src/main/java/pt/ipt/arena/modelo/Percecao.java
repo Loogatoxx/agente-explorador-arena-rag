@@ -38,6 +38,8 @@ public class Percecao {
     @SerializedName("cofres_no_mundo")
     private List<Cofre> cofresNoMundo;
 
+    // No servidor real, outros_robots vem como DICIONÁRIO {id:{estado}}; o
+    // ArenaClient normaliza-o para lista antes do Gson (ver normalizarOutrosRobots).
     @SerializedName("outros_robots")
     private List<RoboRival> outrosRobots;
 

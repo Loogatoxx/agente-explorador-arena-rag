@@ -21,7 +21,7 @@ public class RoboRival {
     @SerializedName("y")
     private int y;
 
-    @SerializedName("hp")
+    @SerializedName(value = "energia", alternate = {"hp"})
     private int hp;
 
     public RoboRival() {

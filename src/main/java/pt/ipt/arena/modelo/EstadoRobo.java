@@ -18,7 +18,8 @@ public class EstadoRobo {
     @SerializedName("y")
     private int y;
 
-    @SerializedName("hp")
+    // Servidor real usa "energia"; os nossos simuladores usam "hp" (ambos -> hp).
+    @SerializedName(value = "energia", alternate = {"hp"})
     private int hp;
 
     public EstadoRobo() {
