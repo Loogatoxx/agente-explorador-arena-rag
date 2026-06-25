@@ -79,16 +79,23 @@ public class PipelineRag {
         if (topo.isEmpty()) {
             return null;
         }
+        // Contexto completo (top-K) — guardado para enviar como rag_chunk e dar
+        // transparência ao servidor sobre o material consultado.
         StringBuilder contexto = new StringBuilder();
         for (DocumentoVetorial doc : topo) {
             contexto.append(doc.getTexto()).append('\n');
         }
-        String seccao = contexto.toString().trim();
-        String bruto = ollama.gerarTextoRaw(construirChatML(seccao, enigma));
+        // O LLM recebe APENAS a secção mais relevante (top-1). Com vários chunks
+        // no prompt, o modelo pequeno (0.5b) confunde-se e devolve o código de
+        // uma secção vizinha (observado ao vivo: VENT-OUT em vez de VALVULA-ALT).
+        String seccaoTopo = topo.get(0).getTexto();
+        String bruto = ollama.gerarTextoRaw(construirChatML(seccaoTopo, enigma));
         if (bruto == null) {
             return null;
         }
-        return new ResultadoRag(limparChave(bruto), seccao, bruto);
+        // Rede de segurança determinística sobre a alucinação do LLM pequeno.
+        String chave = validarOuExtrair(limparChave(bruto), seccaoTopo);
+        return new ResultadoRag(chave, contexto.toString().trim(), bruto);
     }
 
     /**
@@ -105,6 +112,34 @@ public class PipelineRag {
             return null;
         }
         return arena.desbloquear(resultado.chave(), resultado.contexto(), resultado.bruto());
+    }
+
+    /**
+     * Padrão de um código operacional do manual: palavra em MAIÚSCULAS ligada por
+     * hífen a outra palavra/número (ex.: {@code XTR-99}, {@code VALVULA-ALT},
+     * {@code SIGMA-3}, {@code OPTIC-ZOOM}).
+     */
+    private static final java.util.regex.Pattern CODIGO =
+            java.util.regex.Pattern.compile("[A-Z]{2,}(?:-[A-Z0-9]+)+");
+
+    /**
+     * Valida a chave proposta pelo LLM contra a secção recuperada. Se a chave
+     * constar literalmente da secção (ignorando maiúsculas), aceita-a. Caso
+     * contrário devolve o ÚLTIMO código operacional encontrado na secção — nestes
+     * manuais a chave de ação é sempre o último token em MAIÚSCULAS da frase, pelo
+     * que esta extração é determinística e imune a alucinações do modelo pequeno.
+     */
+    static String validarOuExtrair(String chaveLlm, String seccao) {
+        if (chaveLlm != null && !chaveLlm.isBlank()
+                && seccao.toUpperCase().contains(chaveLlm.toUpperCase())) {
+            return chaveLlm;
+        }
+        java.util.regex.Matcher m = CODIGO.matcher(seccao);
+        String ultimo = null;
+        while (m.find()) {
+            ultimo = m.group();
+        }
+        return ultimo != null ? ultimo : chaveLlm;
     }
 
     /** Parte o manual em blocos lógicos por quebras de linha, ignorando vazios. */
