@@ -2,7 +2,7 @@ package pt.ipt.arena.sim;
 
 import com.google.gson.Gson;
 
-import pt.ipt.arena.heuristica.AvaliadorQ;
+import pt.ipt.arena.heuristica.AgenteQ;
 import pt.ipt.arena.heuristica.Bussola;
 import pt.ipt.arena.heuristica.MotorHeuristico;
 import pt.ipt.arena.heuristica.Postura;
@@ -411,7 +411,7 @@ public final class SimuladorBatalha {
      * simulador. Trata o início/fim de episódio (recompensa terminal) e devolve a
      * colocação do agente (0 = vencedor). Encapsula o acesso às posições iniciais.
      */
-    public static int treinarEpisodio(AvaliadorQ aq, List<java.util.function.Supplier<MotorHeuristico>> campo,
+    public static int treinarEpisodio(AgenteQ aq, List<java.util.function.Supplier<MotorHeuristico>> campo,
                                       long seed, int n, int nRecursos, int nCofres) {
         SimuladorBatalha arena = new SimuladorBatalha(seed, n, nRecursos, nCofres);
         int k = campo.size() + 1;
@@ -425,8 +425,9 @@ public final class SimuladorBatalha {
         }
         aq.novoEpisodio();
         List<Bot> ranking = arena.jogar(bots);
-        aq.fimEpisodio(!meu.vivo);
-        return ranking.indexOf(meu);
+        int colocacao = ranking.indexOf(meu);
+        aq.fimEpisodio(colocacao, bots.size());
+        return colocacao;
     }
 
     public static void main(String[] args) {

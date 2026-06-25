@@ -1,6 +1,8 @@
 package pt.ipt.arena.sim;
 
+import pt.ipt.arena.heuristica.AgenteQ;
 import pt.ipt.arena.heuristica.AvaliadorQ;
+import pt.ipt.arena.heuristica.AvaliadorQHibrido;
 import pt.ipt.arena.heuristica.MotorHeuristico;
 import pt.ipt.arena.heuristica.TabelaQ;
 
@@ -26,7 +28,9 @@ public final class TreinadorQ {
 
     public static void main(String[] args) throws Exception {
         int episodios = args.length > 0 ? Integer.parseInt(args[0]) : 40000;
-        String saida = args.length > 1 ? args[1] : "qtable.txt";
+        String modo = args.length > 1 ? args[1] : "hibrido";
+        String saida = args.length > 2 ? args[2] : "qtable.txt";
+        boolean hibrido = !"puro".equalsIgnoreCase(modo);
         int n = 17;
         int nRecursos = 8;
         int nCofres = 4;
@@ -36,7 +40,7 @@ public final class TreinadorQ {
         Random rng = new Random(123);
         int k = campo.size() + 1;
 
-        System.out.println("=== Treino Q-Learning (LOCAL) ===");
+        System.out.println("=== Treino Q-Learning (LOCAL) — modo " + (hibrido ? "HIBRIDO" : "PURO") + " ===");
         System.out.println("episodios=" + episodios + " | campo=" + campo.size()
                 + " adversarios | arena " + n + "x" + n + " | acoes=4");
         System.out.printf("%-10s %-9s %-16s %-7s%n", "episodio", "epsilon", "colocacao(med/8)", "1os%");
@@ -48,7 +52,9 @@ public final class TreinadorQ {
         int conta = 0;
         for (int e = 0; e < episodios; e++) {
             double eps = Math.max(0.05, 1.0 - e / (0.8 * episodios));
-            AvaliadorQ aq = new AvaliadorQ(tabela, eps, true, rng.nextLong());
+            AgenteQ aq = hibrido
+                    ? new AvaliadorQHibrido(tabela, eps, true, rng.nextLong())
+                    : new AvaliadorQ(tabela, eps, true, rng.nextLong());
             int place = SimuladorBatalha.treinarEpisodio(aq, campo, e, n, nRecursos, nCofres);
             somaPts += (k - 1 - place);
             if (place == 0) {
@@ -68,7 +74,8 @@ public final class TreinadorQ {
         System.out.println("\nTabela Q guardada em '" + saida + "' (" + tabela.tamanho() + " estados).");
 
         // --- Avaliacao final GREEDY vs combo, no mesmo campo ---
-        Supplier<MotorHeuristico> qGreedy = () -> MotorHeuristico.comQ(new AvaliadorQ(tabela, 0.0, false, 1));
+        Supplier<MotorHeuristico> qGreedy = () -> MotorHeuristico.comQ(
+                hibrido ? new AvaliadorQHibrido(tabela, 0.0, false, 1) : new AvaliadorQ(tabela, 0.0, false, 1));
         Supplier<MotorHeuristico> combo = () -> new MotorHeuristico("combo");
         double[] rq = SimuladorBatalha.avaliarContra(qGreedy, campo, 200, n, nRecursos, nCofres);
         double[] rc = SimuladorBatalha.avaliarContra(combo, campo, 200, n, nRecursos, nCofres);
