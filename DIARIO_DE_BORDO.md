@@ -830,3 +830,33 @@ perfis de adversário, incluindo random.
 ### Estado
 - **32 testes verdes** (+2: `CombateTest`). Relatório em
   `docs/Relatorio_Testes_Combate.md`. Commits + push + sync iCloud.
+
+## 2026-06-25 — Etapa 25: Machine Learning autónomo (Q-Learning) 100% local
+
+**Prompt (Carlos):** substituir as regras heurísticas + OtimizadorAuto
+(hill-climbing) por **ML autónomo** treinado localmente nos simuladores rápidos,
+sem API na malha de treino. Carta-branca no design e na matemática.
+
+### Escolha e desenho
+- **Q-Learning tabular** (vs NEAT): integra-se como `AvaliadorAcao`, é leve/local
+  e explicável. Reutiliza os simuladores (`SimuladorBatalha.treinarEpisodio`).
+- **Ações:** 4 direções. **Estado** (`EstadoQ`, ~2160): bloqueio adjacente +
+  direção do alvo + direção/ameaça do rival + bucket de HP.
+- **Recompensa:** `Δhp + 0.5 sobreviver`, `−50` na morte (o Δhp já capta cofre
+  +100 / recurso +20 / golpe −15 / andar −1).
+- **Classes:** `EstadoQ`, `TabelaQ` (Bellman + persistência), `AvaliadorQ`
+  (online, ε-greedy/greedy), `MotorHeuristico.comQ()`, `TreinadorQ` (loop local).
+
+### Resultados (5000 episódios)
+- **Aprende**: colocação média 4.30 → 4.83; 1.ºs 9.6% → ~13%.
+- Greedy vs combo (200 seeds): Q **4.73** vs combo **5.86** → o Q puro ainda NÃO
+  bate o combo. Honesto e esperado: o combo navega com **BFS**; o `EstadoQ` só vê
+  direção grosseira (sem contornar paredes). Plateau ~4.8 = teto do estado atual.
+
+### Próximo passo identificado
+- **Híbrido**: manter a navegação BFS do combo e usar o Q **só para o combate**
+  (lutar/fugir/rematar). É aí que o ML pode superar as regras à mão.
+
+### Estado
+- **36 testes verdes** (+4: `QLearningTest`). Relatório em
+  `docs/Relatorio_ML_QLearning.md`. Commits progressivos + push + sync iCloud.

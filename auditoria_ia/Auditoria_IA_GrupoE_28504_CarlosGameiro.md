@@ -332,4 +332,28 @@ incluindo bots random.
 - "Já somos os melhores" também é um resultado — provado com medição. E mexer só
   por mexer (a tal intuição) costuma piorar; é preciso medir antes e depois.
 
+---
+
+## Interação #15 — Machine Learning autónomo (Q-Learning) local (2026-06-25)
+
+### O meu Prompt
+Pedi para passar a um nível superior: substituir as regras heurísticas e o
+otimizador hill-climbing por **ML autónomo de verdade**, a treinar 100% local no
+meu MacBook (sem gastar créditos API), com carta-branca no design e na matemática.
+
+### A Resposta da IA
+- Escolheu **Q-Learning tabular** (justificou vs NEAT): integra-se como avaliador
+  na arquitetura, é local/leve e explicável; reutiliza os nossos simuladores.
+- Desenhou estado (compacto), ações (4 direções) e a **recompensa** (Δhp +
+  sobreviver, malus de morte) para "forçar a meta".
+- Escreveu as classes (`EstadoQ`, `TabelaQ`, `AvaliadorQ`, `TreinadorQ`) + testes,
+  e treinou localmente: o agente **aprende** (curva sobe), mas o **Q puro ainda
+  não bate o combo** (que usa BFS). Foi **honesto** sobre isso e identificou o
+  próximo passo (híbrido: Q só para o combate). Relatório + 36 testes verdes.
+
+### O que retive
+- ML não é magia: um agente que aprende do zero não bate logo um sistema
+  afinado com pathfinding. O valor está no **sistema autónomo** (e no plano para
+  o híbrido), medido com honestidade — não em prometer milagres.
+
 
