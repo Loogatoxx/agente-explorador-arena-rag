@@ -81,6 +81,16 @@ public class MotorHeuristico {
     }
 
     /**
+     * Motor de Machine Learning PURO: a política inteira é decidida por um agente
+     * de Q-Learning ({@link AvaliadorQ}). A cadeia tem só o agente Q — sem regras
+     * heurísticas — para medir honestamente o que a aprendizagem descobre.
+     */
+    public static MotorHeuristico comQ(AvaliadorQ agenteQ) {
+        return new MotorHeuristico("Q", new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(agenteQ));
+    }
+
+    /**
      * Configuração "clássica" (gulosa: atração de 1 passo por Manhattan + mapa de
      * calor, SEM mapa acumulado nem pathfinding). Mantida para o benchmark A/B
      * que comprova o ganho da versão otimizada.
