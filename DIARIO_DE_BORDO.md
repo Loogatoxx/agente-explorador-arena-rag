@@ -700,3 +700,45 @@ que teriam **rebentado** o agente:
   **iCloud** a sincronizar `Documents/` e a evict ficheiros). Como tudo estava no
   **GitHub**, recuperou-se com um clone fresco — **zero perdas**.
   Recomendação: tirar o projeto do iCloud (ou desativar "Otimizar Armazenamento").
+
+## 2026-06-25 — Etapa 21: Os cofres ABREM — diagnóstico e 3 correções (sala 9B8860)
+
+**Prompt (Carlos):** "corrige o problema do robô falhar os cofres — acho que o
+Ollama está mal configurado ou fraco demais; explica como inicializas o bot;
+testa em direto." (+ skill `auto-power` a aplicar no fim).
+
+### O suspeito errado: NÃO era o Ollama
+A hipótese inicial ("Ollama fraco") foi **refutada com dados**. Testando o
+pipeline contra o **manual real** do servidor, a recuperação vetorial acerta
+**sempre** a secção certa em 1.º lugar. O problema estava noutro lado.
+
+### 3 causas-raiz encontradas ao vivo (e corrigidas)
+1. **LLM confundido com 3 chunks.** Dávamos o top-3 ao modelo 0.5b e ele
+   escolhia o código da secção errada (ex.: `VENT-OUT` em vez de `VALVULA-ALT`).
+   → Passa a receber só o **top-1** + rede de segurança que extrai o código por
+   regex se ele alucinar. Diagnóstico: **5/5 enigmas** resolvidos.
+2. **Flood auto-infligido.** Uma alteração intermédia ("mexer sempre após o
+   cofre") encadeava `unlock` + `move` **sem pausa** → o servidor acusava
+   *"Flood detetado! Ausência de Thread.sleep()"* e o unlock devolvia `null`.
+   → Regra: **uma só chamada de servidor por turno** (resolve OU navega). O
+   agente não congela porque o cofre passa a "tentado" (novo conjunto
+   `cofresTentados`, que não bloqueia a casa) e no turno seguinte sai de cima.
+3. **Sucesso lido como falha.** O endpoint `unlock` (FastAPI) faz `return None`
+   quando a chave está CERTA → corpo HTTP `null`/vazio com 200, **mais** a
+   recompensa de +HP (provado: HP saltou para 250 ao abrir o cofre). As recusas
+   é que devolvem um objeto JSON (`{status: falha}`). → `enviarDesbloqueio`
+   normaliza corpo nulo/vazio+200 para `{status: sucesso}`.
+
+### Validação em direto (sala 9B8860, robô grupoE_beta)
+- Registo, indexação do manual (RAG), navegação e combate: tudo OK.
+- **4 cofres alcançados; abertos com +HP** (1 com `{"status":"sucesso"}`
+  explícito, 3 com corpo `null` = sucesso — agora também reconhecidos).
+- Detalhe aprendido: re-registar o **mesmo id** retoma o robô antigo com a
+  energia que restava (um robô voltou com 21 HP e morreu de inanição); para um
+  robô **novo a 200 HP** usa-se um id novo (grupoE_beta/gamma).
+
+### Estado
+- **28 testes verdes** (+4: `validarOuExtrair`, `cofreJaTentado`).
+- Commits pequenos e progressivos + push; árvore sincronizada com o iCloud.
+- A sala fica **inativa** quando o match termina (`game_over`); para nova
+  validação é preciso criar outra sala no site do professor.

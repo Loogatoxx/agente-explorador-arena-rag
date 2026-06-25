@@ -233,4 +233,31 @@ dela, e ver os testes.
 - Sublinhou que isto é apoio à oral, mas que cada elemento deve mesmo
   compreender o código (a transparência conta).
 
+---
+
+## Interação #11 — "O robô falha os cofres" — diagnóstico e correção (2026-06-25)
+
+### O meu Prompt
+Disse para corrigir o facto de o robô falhar os cofres — suspeitava que o
+**Ollama** estivesse mal configurado ou fraco demais. Pedi também para me
+explicar como se inicializa o bot e para testar em direto.
+
+### A Resposta da IA
+- **Refutou a minha hipótese com dados:** não era o Ollama. A recuperação
+  vetorial acerta sempre a secção certa; o problema era outro.
+- Encontrou e corrigiu **3 causas-raiz**: (1) dávamos 3 secções ao LLM pequeno
+  e ele escolhia o código errado → passa a receber só a melhor + extração do
+  código por regex (5/5 enigmas); (2) um `unlock` seguido de `move` sem pausa
+  disparava o **anti-flood** do servidor (o unlock vinha a `null`) → uma só
+  chamada de servidor por turno; (3) o servidor devolve corpo `null` no
+  **sucesso** (com +HP) e nós líamos como falha → passou a ser reconhecido.
+- Mostrou o comando de arranque do bot
+  (`java ... pt.ipt.arena.AgenteExplorador <SALA> <ID>`).
+- **Testou em direto** (sala 9B8860): **4 cofres abertos** com +HP. 28 testes
+  verdes, commits progressivos e push.
+
+### O que retive
+- Não assumir a causa "óbvia" (Ollama) — medir primeiro. O modelo pequeno até
+  chega; o que o atrapalhava era o contexto a mais e o ritmo dos pedidos.
+
 
