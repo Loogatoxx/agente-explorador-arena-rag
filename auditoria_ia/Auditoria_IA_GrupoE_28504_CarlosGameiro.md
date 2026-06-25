@@ -260,4 +260,30 @@ explicar como se inicializa o bot e para testar em direto.
 - Não assumir a causa "óbvia" (Ollama) — medir primeiro. O modelo pequeno até
   chega; o que o atrapalhava era o contexto a mais e o ritmo dos pedidos.
 
+---
+
+## Interação #12 — Deslocamento aos saltos + relatório de testes (2026-06-25)
+
+### O meu Prompt
+Pedi para mudar a forma de andar (em vez de linha a linha, saltar para ver várias
+linhas de uma vez), otimizar 1v1 e battle royale, perguntar a que distância o
+robô vê e otimizar em função disso, e **não esquecer o relatório** dos testes
+para não repetir erros (lembrei o guloso que fez 6/30).
+
+### A Resposta da IA
+- **Mediu a vista ao vivo:** o radar vê um **quadrado 7×7** (3 casas à volta).
+- Mudou a exploração: marcar como "vistas" as casas do radar e ir à casa **não
+  vista** mais próxima → o robô **salta** em vez de pisar tudo.
+- **Benchmarkou o raio** (0 a 5) em 30 e 120 cartas para escolher sem cair na
+  armadilha do guloso: raio **3** dá **30/30** (e 120/120) e é **~3,9× mais
+  rápido** que antes. A/B: guloso **6/30 → 30/30**, −96,7% de turnos.
+- Escreveu o **relatório** `docs/Relatorio_Testes_Navegacao.md` com os números e
+  as lições (guloso 6/30; saltar demais volta a falhar; medir em muitos seeds).
+- 30 testes verdes, commits progressivos + push.
+
+### O que retive
+- Otimizar a cobertura é faca de dois gumes: saltar **demais** volta a falhar
+  cofres (o mesmo erro do guloso). Validar sempre **30/30 / 120/120** antes de
+  aceitar mais velocidade, e ancorar o parâmetro na medição real (raio = 3).
+
 

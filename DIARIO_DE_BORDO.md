@@ -742,3 +742,39 @@ pipeline contra o **manual real** do servidor, a recuperação vetorial acerta
 - Commits pequenos e progressivos + push; árvore sincronizada com o iCloud.
 - A sala fica **inativa** quando o match termina (`game_over`); para nova
   validação é preciso criar outra sala no site do professor.
+
+## 2026-06-25 — Etapa 22: Deslocamento aos saltos (exploração ciente do radar)
+
+**Prompt (Carlos):** mudar a forma de andar — em vez de varrer linha a linha,
+fazer ~1 linha em 3 / saltar para verificar várias linhas de uma vez; otimizar
+1v1 e battle royale; medir a vista do robô e otimizar em função dela; **não
+esquecer o relatório** dos testes (lembrar o guloso que fez só 6/30).
+
+### Alcance do radar (medido ao vivo)
+Na sala 9B8860, robô em (17,3): objetos vistos em `dx,dy ∈ [-3,3]` → **quadrado
+7×7** (Chebyshev 3). Coerente com o simulador (4.5 euclidiano). → Marcar "visto"
+até raio 3 é **seguro**; raio 4 já inclui cantos fora do radar real.
+
+### A mudança
+Antes a exploração ia à casa **não pisada** mais próxima (obrigava a pisar tudo).
+Agora cada paragem marca como **vistas** as casas do radar (`marcarVistasEmRaio`,
+raio configurável) e a exploração vai à casa **não vista** mais próxima → o
+agente **salta** ~R+1 casas sem deixar buracos. `DEFAULT_RAIO_VISAO = 3`.
+
+### Benchmark (escolha do raio, anti-viés do vencedor)
+- 30 cartas: guloso **6/30** (73 116); raio 0 (pisar tudo) 29/30 (9 467);
+  **raio 3 → 30/30 (2 445)**; raios 4-5 não melhoram (sobre-saltam).
+- 120 cartas: raio 0 113/120; **raio 3 120/120** (raio 4 empata, mas
+  sobre-declara casas que o radar real não vê → fica o 3, principiado).
+- A/B oficial: **6/30 → 30/30**, turnos médios **186 → 53** (−72%), score
+  global **−96,7%**; vs versão anterior, **+1 cenário e ~3,9× mais rápido**.
+
+### Estado
+- **30 testes verdes** (+2: marcação do radar; trava de regressão da navegação).
+- Relatório em `docs/Relatorio_Testes_Navegacao.md` (resultados + lições).
+- Commits progressivos + push + sync iCloud.
+
+### Pendente (próxima sessão)
+- Otimização **1v1** e **battle royale** contra vários perfis de adversário +
+  random (estender `SimuladorDuelo`/free-for-all). Carlos quer que NÃO se lance
+  nada de início — só estimar a potência e esperar.
