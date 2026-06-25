@@ -111,6 +111,21 @@ class MotorHeuristicoTest {
     }
 
     @Test
+    void cofreJaTentadoRefleteListaNegraEResolvidos() {
+        MotorHeuristico motor = new MotorHeuristico("eu");
+        pt.ipt.arena.modelo.Coordenada a = new pt.ipt.arena.modelo.Coordenada(3, 4);
+        pt.ipt.arena.modelo.Coordenada b = new pt.ipt.arena.modelo.Coordenada(7, 1);
+        pt.ipt.arena.modelo.Coordenada c = new pt.ipt.arena.modelo.Coordenada(9, 9);
+
+        assertEquals(false, motor.cofreJaTentado(a), "cofre virgem ainda não foi tentado");
+        motor.marcarCofreFalhado(a);
+        motor.marcarCofreResolvido(b);
+        assertEquals(true, motor.cofreJaTentado(a), "cofre falhado conta como já tentado");
+        assertEquals(true, motor.cofreJaTentado(b), "cofre resolvido conta como já tentado");
+        assertEquals(false, motor.cofreJaTentado(c), "cofre nunca visto continua por tentar");
+    }
+
+    @Test
     void cercadoDevolveAcaoSegura() {
         MotorHeuristico motor = new MotorHeuristico("eu");
         Acao acao = motor.decidir(percecao(

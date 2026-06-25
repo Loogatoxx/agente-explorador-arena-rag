@@ -72,15 +72,16 @@ public class AgenteExplorador {
                     }
 
                     Cofre cofre = percecao.getCofreSobOAgente();
-                    if (cofre != null) {
-                        // RAG: resolver o enigma e desbloquear o cofre.
+                    if (cofre != null && !motor.cofreJaTentado(cofre.getPosicao())) {
+                        // RAG: resolver o enigma e desbloquear o cofre (UMA vez).
                         resolverCofre(cofre, pipeline, motor);
-                    } else {
-                        // THINK (Decisão) + ACT (Ação): navegação heurística.
-                        Acao acao = motor.decidir(percecao);
-                        JsonObject resposta = arena.agir(acao);
-                        System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
                     }
+                    // THINK + ACT: navega SEMPRE, mesmo logo após tratar um cofre.
+                    // Isto evita que o agente fique congelado sobre a casa do cofre
+                    // a reabrir o mesmo enigma em loop — sai dela rumo ao próximo alvo.
+                    Acao acao = motor.decidir(percecao);
+                    JsonObject resposta = arena.agir(acao);
+                    System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
                 }
             } catch (RuntimeException e) {
                 // Rede de segurança final: um turno mau nunca derruba o agente.
@@ -107,15 +108,20 @@ public class AgenteExplorador {
         JsonObject resposta = pipeline.tentarDesbloquear(cofre);
         System.out.println("[Agente] Resultado do unlock: " + resposta);
 
-        boolean sucesso = resposta != null
-                && resposta.has("status")
-                && "sucesso".equalsIgnoreCase(resposta.get("status").getAsString());
-        if (sucesso) {
+        if (resposta == null || !resposta.has("status")) {
+            // Resposta nula/ambígua (micro-corte de rede?): NÃO blacklista — a chave
+            // pode estar correta. Fica por tentar e pode retentar se voltar ao cofre.
+            System.out.println("[Agente] Resposta inconclusiva — cofre NÃO blacklistado (poderá retentar).");
+            return;
+        }
+        String status = resposta.get("status").getAsString();
+        if ("sucesso".equalsIgnoreCase(status)) {
             motor.marcarCofreResolvido(cofre.getPosicao());
             System.out.println("[Agente] Cofre resolvido com sucesso (+HP).");
         } else {
+            // Chave recusada pelo servidor: lista negra para o motor fugir da casa.
             motor.marcarCofreFalhado(cofre.getPosicao());
-            System.out.println("[Agente] Cofre marcado na lista negra (RAG falhou).");
+            System.out.println("[Agente] Cofre marcado na lista negra (status=" + status + ").");
         }
     }
 
