@@ -664,3 +664,39 @@
 ### Decisão
 - Combo adotado como **default** (melhor vs fortes, navegação ligeiramente
   melhor, igual vs fracos). **24 testes verdes.**
+
+---
+
+## 2026-06-24 — Etapa 20: TESTE EM DIRETO na arena real (sala F74EDF)
+*(Prompt pensado pelo Carlos: a arena abriu.)*
+
+### Descobertas ao comparar o JSON REAL com o nosso modelo inferido (e correções)
+O modelo tinha sido inferido do enunciado — o servidor real revelou 3 diferenças
+que teriam **rebentado** o agente:
+1. **HP chama-se `energia`** (não `hp`). Correção: `@SerializedName(value="energia",
+   alternate={"hp"})` em `EstadoRobo`/`RoboRival` — aceita os DOIS mundos (servidor
+   real + os nossos simuladores que usam `hp`).
+2. **x/y vêm como floats** (ex.: `10.0`). O Gson coage para `int` (confirmado).
+3. **`outros_robots` é um DICIONÁRIO** `{id:{estado}}`, não uma lista! Mapeá-lo para
+   `List` rebentava. Correção: `ArenaClient.normalizarOutrosRobots` converte
+   dict→lista (injetando o id da chave) antes do Gson.
+4. `objetos_fixos` têm `{id,type,model,x,y,z}` — a nossa `Coordenada` mapeia x,y e
+   ignora o resto (funciona).
+
+### Validação em direto
+- `register` / `perceive` / `action` confirmados. `ArenaClient.percecionarTipado()`
+  parseia o servidor real corretamente (x=3, y=1, energia=200, paredes=13).
+- O registo **expira por inatividade** ("Robô não registado"); o nosso ciclo
+  perceciona a cada 400 ms, por isso mantém-se registado.
+- **24 testes verdes** continuam a passar (os simuladores usam `hp`+lista).
+
+### Pendente (precisa do professor)
+- O match **ainda não arrancou** (`game_started=false`, ação devolve
+  "bloqueado / Aguarde início"). Falta o **START** para: (a) confirmar a
+  orientação do **eixo Y** (1 movimento basta) e (b) correr o agente ao vivo.
+
+### INCIDENTE (importante)
+- O `.git` local **corrompeu-se** e vários ficheiros desapareceram (provável
+  **iCloud** a sincronizar `Documents/` e a evict ficheiros). Como tudo estava no
+  **GitHub**, recuperou-se com um clone fresco — **zero perdas**.
+  Recomendação: tirar o projeto do iCloud (ou desativar "Otimizar Armazenamento").
