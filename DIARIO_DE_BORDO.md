@@ -804,3 +804,29 @@ for demorado, automatizar (controlo do PC / outro browser — abriu o Opera).
 - A password `aluno_treino_2026` só gera missões **individuais** (infiltração).
   Logo, 1v1 / battle royale REAIS não são testáveis com ela — essa otimização
   faz-se em **simulação** (simuladores de duelo/free-for-all já existentes).
+
+## 2026-06-25 — Etapa 24: Otimização de combate (1v1 + battle royale, com random)
+
+**Prompt (Carlos):** "go combat" — otimizar 1v1 e battle royale contra vários
+perfis de adversário, incluindo random.
+
+### Medição (driver CombatePerfis, com 2 bots random no campo)
+- **Battle royale** (9 bots, 150 seeds): o agente **ENTREGUE (combo)** é o melhor
+  — colocação **6.247/8** e **39.3% de 1.ºs lugares** (2.º melhor 5.46).
+- **1v1** (250 seeds, vitória %): combo é o melhor — **média 63.5%**. Domina o
+  random (90%) e os prudentes (75%). Fraqueza relativa: agressores puros (~38%).
+
+### Tentativa de melhoria → revertida (lição)
+- Hipótese: gatar a `Esquiva` para só fugir com 2+ rivais (não fugir num duelo).
+- Resultado: **pior em tudo** (BR 6.247→5.993; 1v1 63.5→55.7; vs Agressor 38→18).
+  Fugir de um rival único é **kiting** útil. Revertido. Mesma lição do guloso e do
+  salto-a-mais: não "otimizar" por intuição o que já está medido como bom.
+
+### Decisão
+- Manter o combo entregue: já é o **ótimo** medido em 1v1 e battle royale, e
+  nenhum arquétipo do espaço (limiar/margem/postura/remate) o supera. Não
+  sacrificar a dominância em battle royale (modo real) por mais vitórias 1v1.
+
+### Estado
+- **32 testes verdes** (+2: `CombateTest`). Relatório em
+  `docs/Relatorio_Testes_Combate.md`. Commits + push + sync iCloud.

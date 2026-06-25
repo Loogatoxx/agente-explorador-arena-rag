@@ -310,4 +310,26 @@ browser se o Safari bloqueasse).
 - A automação de browser precisa da extensão certa (não basta "ver" o ecrã).
 - Validação ponta-a-ponta no servidor real é o teste que mais conta — e passou.
 
+---
+
+## Interação #14 — Otimização de combate (1v1 + battle royale) (2026-06-25)
+
+### O meu Prompt
+"go combat" — otimizar o combate em 1v1 e battle royale contra vários perfis,
+incluindo bots random.
+
+### A Resposta da IA
+- Criou um comparador (`CombatePerfis`) com **random no campo** e mediu, com 150/250
+  seeds: o **agente entregue é o melhor nas duas frentes** — battle royale
+  (colocação 6.247/8, 39% de 1.ºs) e 1v1 (média 63.5% de vitórias).
+- Tentou uma melhoria (gatar a esquiva) mas mediu que **piorava tudo** e
+  **reverteu** — explicou que fugir de um rival único é kiting útil.
+- Concluiu, com dados, que **não vale a pena** mudar: o combo já é o ótimo e
+  perseguir o 1v1 contra agressores estragaria a dominância em battle royale (o
+  modo real). Escreveu `docs/Relatorio_Testes_Combate.md` e travou com testes.
+
+### O que retive
+- "Já somos os melhores" também é um resultado — provado com medição. E mexer só
+  por mexer (a tal intuição) costuma piorar; é preciso medir antes e depois.
+
 
