@@ -3,6 +3,7 @@ package pt.ipt.arena;
 import com.google.gson.JsonObject;
 
 import pt.ipt.arena.heuristica.MotorHeuristico;
+import pt.ipt.arena.heuristica.Postura;
 import pt.ipt.arena.ia.OllamaClient;
 import pt.ipt.arena.ia.PipelineRag;
 import pt.ipt.arena.modelo.Acao;
@@ -34,9 +35,11 @@ public class AgenteExplorador {
         // Configuração simples por argumentos (com valores por omissão).
         String sala = (args.length > 0) ? args[0] : "aluno_treino_2026";
         String idRobo = (args.length > 1) ? args[1] : "grupoE_alfa";
+        String perfil = (args.length > 2) ? args[2] : "otimo";
 
         ArenaClient arena = new ArenaClient(sala, idRobo);
-        MotorHeuristico motor = new MotorHeuristico(idRobo);
+        MotorHeuristico motor = criarMotor(perfil, idRobo);
+        System.out.println("[Agente] Perfil de jogo: " + perfil);
         OllamaClient ollama = new OllamaClient();
         PipelineRag pipeline = new PipelineRag(arena, ollama);
         PainelMapaCalor painel = PainelMapaCalor.abrirJanela("Telemetria - " + idRobo);
@@ -104,6 +107,30 @@ public class AgenteExplorador {
      * via RAG e submete a chave. Em caso de falha, marca o cofre na lista negra
      * para o motor heurístico forçar uma fuga no turno seguinte.
      */
+    /**
+     * Constrói o motor de decisão segundo o perfil pedido. Permite lançar, na
+     * MESMA sala, vários robôs com comportamentos distintos para testar combate
+     * (1v1 / battle royale) no servidor real:
+     *   - {@code otimo}    : configuração entregue (a melhor em simulação);
+     *   - {@code cacador}  : agressivo (caça rivais proativamente + remate);
+     *   - {@code evasivo}  : foge da densidade inimiga, só ataca com vantagem;
+     *   - {@code guloso}   : clássico guloso (referência fraca);
+     *   - qualquer outro   : {@code otimo}.
+     */
+    private static MotorHeuristico criarMotor(String perfil, String idRobo) {
+        switch (perfil == null ? "" : perfil.toLowerCase()) {
+            case "cacador":
+                return MotorHeuristico.comEstrategiaCompleta(idRobo, 0, 90, Postura.CACAR, true);
+            case "evasivo":
+                return MotorHeuristico.comEstrategiaCompleta(idRobo, 0, 30, Postura.EVITAR, false);
+            case "guloso":
+                return MotorHeuristico.classico(idRobo);
+            case "otimo":
+            default:
+                return new MotorHeuristico(idRobo);
+        }
+    }
+
     private static void resolverCofre(Cofre cofre, PipelineRag pipeline, MotorHeuristico motor) {
         if (!pipeline.estaIndexado()) {
             pipeline.indexarManual();
