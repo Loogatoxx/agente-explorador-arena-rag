@@ -207,14 +207,21 @@ public class MotorHeuristico {
         memoria.marcarCofreResolvido(posicaoCofre);
     }
 
+    /** Marca um cofre como tentado (qualquer desfecho), para não reabrir o enigma em loop. */
+    public void marcarCofreTentado(Coordenada posicaoCofre) {
+        memoria.marcarCofreTentado(posicaoCofre);
+    }
+
     /**
-     * Indica se o cofre nesta posição já foi tentado — resolvido com sucesso OU
-     * marcado na lista negra. O orquestrador usa isto para NÃO reabrir o mesmo
+     * Indica se o cofre nesta posição já foi tentado — resolvido com sucesso,
+     * marcado na lista negra OU simplesmente já abordado uma vez (mesmo com
+     * resposta inconclusiva). O orquestrador usa isto para NÃO reabrir o mesmo
      * enigma em loop quando o agente permanece sobre a casa do cofre.
      */
     public boolean cofreJaTentado(Coordenada posicaoCofre) {
         return memoria.cofreResolvido(posicaoCofre)
-                || memoria.cofreEstaNaListaNegra(posicaoCofre);
+                || memoria.cofreEstaNaListaNegra(posicaoCofre)
+                || memoria.cofreTentado(posicaoCofre);
     }
 
     /** Expõe a memória (ex.: para a UI ler o snapshot do mapa de calor). */

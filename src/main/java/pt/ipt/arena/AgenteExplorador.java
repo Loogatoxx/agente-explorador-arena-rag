@@ -73,15 +73,19 @@ public class AgenteExplorador {
 
                     Cofre cofre = percecao.getCofreSobOAgente();
                     if (cofre != null && !motor.cofreJaTentado(cofre.getPosicao())) {
-                        // RAG: resolver o enigma e desbloquear o cofre (UMA vez).
+                        // RAG: resolve e desbloqueia o cofre. É a ÚNICA chamada ao
+                        // servidor neste turno — encadear unlock + movimento sem pausa
+                        // dispara o anti-flood do servidor ("Ausência de Thread.sleep()")
+                        // e faz o unlock devolver corpo nulo. O agente NÃO fica preso:
+                        // como o cofre passa a "já tentado", no turno seguinte cai no
+                        // ramo de navegação e sai de cima da casa.
                         resolverCofre(cofre, pipeline, motor);
+                    } else {
+                        // THINK + ACT: navegação heurística (uma ação por turno).
+                        Acao acao = motor.decidir(percecao);
+                        JsonObject resposta = arena.agir(acao);
+                        System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
                     }
-                    // THINK + ACT: navega SEMPRE, mesmo logo após tratar um cofre.
-                    // Isto evita que o agente fique congelado sobre a casa do cofre
-                    // a reabrir o mesmo enigma em loop — sai dela rumo ao próximo alvo.
-                    Acao acao = motor.decidir(percecao);
-                    JsonObject resposta = arena.agir(acao);
-                    System.out.println("[Agente] " + percecao + " -> " + acao + " | resposta: " + resposta);
                 }
             } catch (RuntimeException e) {
                 // Rede de segurança final: um turno mau nunca derruba o agente.
@@ -108,10 +112,15 @@ public class AgenteExplorador {
         JsonObject resposta = pipeline.tentarDesbloquear(cofre);
         System.out.println("[Agente] Resultado do unlock: " + resposta);
 
+        // Marca SEMPRE como tentado: garante que no turno seguinte o agente sai de
+        // cima da casa em vez de reabrir o mesmo enigma (vale também para o caso de
+        // resposta nula). Não bloqueia a casa — isso só acontece numa falha real.
+        motor.marcarCofreTentado(cofre.getPosicao());
+
         if (resposta == null || !resposta.has("status")) {
-            // Resposta nula/ambígua (micro-corte de rede?): NÃO blacklista — a chave
-            // pode estar correta. Fica por tentar e pode retentar se voltar ao cofre.
-            System.out.println("[Agente] Resposta inconclusiva — cofre NÃO blacklistado (poderá retentar).");
+            // Corpo nulo: tipicamente anti-flood do servidor (unlock cedo demais).
+            // NÃO blacklista — a chave pode estar correta; o cofre fica só "tentado".
+            System.out.println("[Agente] Resposta inconclusiva (nula) — provável anti-flood. Cofre não bloqueado.");
             return;
         }
         String status = resposta.get("status").getAsString();

@@ -31,6 +31,7 @@ public class MemoriaHeuristica {
     private final Map<String, Integer> historicoVisitas = new HashMap<>();
     private final Set<String> cofresFalhados = new HashSet<>();
     private final Set<String> cofresResolvidos = new HashSet<>();
+    private final Set<String> cofresTentados = new HashSet<>();
     private final Deque<Acao> filaAcoesPlaneadas = new ArrayDeque<>();
     private final MapaDescoberto mapa = new MapaDescoberto();
 
@@ -66,6 +67,21 @@ public class MemoriaHeuristica {
 
     public boolean cofreResolvido(Coordenada c) {
         return cofresResolvidos.contains(c.chave());
+    }
+
+    /**
+     * Marca um cofre como TENTADO (independentemente do desfecho). Distinto da
+     * lista negra: não bloqueia a casa para a navegação, apenas impede reabrir o
+     * mesmo enigma em loop. Retira-o ainda do mapa de alvos para o agente não
+     * voltar a ser atraído para lá quando a resposta foi inconclusiva.
+     */
+    public void marcarCofreTentado(Coordenada c) {
+        cofresTentados.add(c.chave());
+        mapa.removerCofre(c);
+    }
+
+    public boolean cofreTentado(Coordenada c) {
+        return cofresTentados.contains(c.chave());
     }
 
     // ----- Mapa acumulado e exploração -----
