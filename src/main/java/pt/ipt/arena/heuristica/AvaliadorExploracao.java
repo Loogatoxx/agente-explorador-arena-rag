@@ -23,8 +23,13 @@ public class AvaliadorExploracao implements AvaliadorAcao {
         }
         Coordenada pos = ctx.minhaPosicao();
 
+        // Fronteira = célula transitável mais próxima ainda NÃO VISTA pelo radar
+        // (não apenas "não pisada"). Como cada paragem "vê" um quadrado de raio R,
+        // o alvo não-visto mais próximo fica tipicamente a ~R+1 casas → o agente
+        // avança aos saltos em vez de varrer linha a linha (cobertura ~ (2R+1)x
+        // mais rápida) sem nunca deixar uma zona por inspecionar.
         Bussola passo = Pathfinder.primeiroPassoParaFronteira(
-                pos, memoria.celulasBloqueadas(), memoria.celulasVisitadas());
+                pos, memoria.celulasBloqueadas(), memoria.celulasVistas());
         if (passo != null && validas.contains(passo)) {
             return Optional.of(passo.paraAcao());
         }

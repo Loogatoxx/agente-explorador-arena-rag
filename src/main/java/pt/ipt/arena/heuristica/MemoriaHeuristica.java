@@ -32,6 +32,7 @@ public class MemoriaHeuristica {
     private final Set<String> cofresFalhados = new HashSet<>();
     private final Set<String> cofresResolvidos = new HashSet<>();
     private final Set<String> cofresTentados = new HashSet<>();
+    private final Set<String> celulasVistas = new HashSet<>();
     private final Deque<Acao> filaAcoesPlaneadas = new ArrayDeque<>();
     private final MapaDescoberto mapa = new MapaDescoberto();
 
@@ -94,6 +95,28 @@ public class MemoriaHeuristica {
     /** Cópia das células já pisadas (chaves "x,y"). */
     public Set<String> celulasVisitadas() {
         return new HashSet<>(historicoVisitas.keySet());
+    }
+
+    /**
+     * Marca como VISTAS todas as células num quadrado de Chebyshev de raio
+     * {@code raio} à volta do centro (o que o radar cobre ao parar ali). Com
+     * {@code raio = 0} marca só a própria célula (equivale a "pisadas").
+     *
+     * É a base da exploração eficiente: uma célula conta como explorada assim que
+     * o radar passa por cima dela, não sendo preciso PISAR cada casa — o agente
+     * pode "saltar" ~2*raio+1 casas entre varrimentos sem deixar buracos.
+     */
+    public void marcarVistasEmRaio(Coordenada centro, int raio) {
+        for (int dx = -raio; dx <= raio; dx++) {
+            for (int dy = -raio; dy <= raio; dy++) {
+                celulasVistas.add(new Coordenada(centro.getX() + dx, centro.getY() + dy).chave());
+            }
+        }
+    }
+
+    /** Cópia das células já vistas pelo radar (chaves "x,y"). */
+    public Set<String> celulasVistas() {
+        return new HashSet<>(celulasVistas);
     }
 
     /** Células intransitáveis para o pathfinding: paredes conhecidas + lista negra. */

@@ -24,10 +24,31 @@ import java.util.Optional;
  */
 public class MotorHeuristico {
 
+    /**
+     * Raio (em casas, distância de Chebyshev) que o radar cobre ao parar numa
+     * célula. Medido ao vivo no servidor real (~3-4 casas; o simulador usa 4.5
+     * euclidiano). Valor por omissão escolhido por benchmark de navegação
+     * (ver docs/Relatorio_Testes_Navegacao.md): melhor compromisso
+     * velocidade/cobertura sem falhar cofres.
+     */
+    public static final int DEFAULT_RAIO_VISAO = 3;
+
     private final String idRobo;
     private final MemoriaHeuristica memoria;
     private final FiltroColisoes filtroColisoes;
     private final List<AvaliadorAcao> cadeia;
+    private final int raioVisao;
+
+    /** Cadeia "abutre completo" — a configuração otimizada por omissão. */
+    private static List<AvaliadorAcao> cadeiaOtimizada() {
+        return List.of(new AvaliadorReflexos(),
+                new AvaliadorBatalha(),
+                new AvaliadorAspirador(),
+                new AvaliadorEsquiva(),
+                new AvaliadorAlvo(),
+                new AvaliadorCanto(),
+                new AvaliadorExploracao());
+    }
 
     /** Posição e ação do turno anterior, para aprender com movimentos bloqueados. */
     private Coordenada posicaoAnterior;
@@ -46,14 +67,17 @@ public class MotorHeuristico {
         // Estratégia "abutre completo" (a melhor medida em simulação, ~6.0/8 vs o
         // campo): combate por REMATE + ASPIRADOR de curas (esfomeia os rivais) +
         // ESQUIVA tática da densidade inimiga + CAMPEIRO dos cantos como recurso.
-        this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
-                List.of(new AvaliadorReflexos(),
-                        new AvaliadorBatalha(),
-                        new AvaliadorAspirador(),
-                        new AvaliadorEsquiva(),
-                        new AvaliadorAlvo(),
-                        new AvaliadorCanto(),
-                        new AvaliadorExploracao()));
+        this(idRobo, new MemoriaHeuristica(), new FiltroColisoes(), cadeiaOtimizada());
+    }
+
+    /**
+     * Igual à configuração otimizada por omissão, mas com um raio de visão
+     * explícito — usado pelo benchmark de navegação para afinar o passo de
+     * exploração (saltos do varrimento).
+     */
+    public static MotorHeuristico comExploracaoRaio(String idRobo, int raioVisao) {
+        return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
+                cadeiaOtimizada(), raioVisao);
     }
 
     /**
@@ -102,13 +126,20 @@ public class MotorHeuristico {
                         new AvaliadorExploracao()));
     }
 
-    /** Construtor de injeção (testes unitários). */
+    /** Construtor de injeção (testes unitários) — raio de visão por omissão. */
     public MotorHeuristico(String idRobo, MemoriaHeuristica memoria,
                            FiltroColisoes filtroColisoes, List<AvaliadorAcao> cadeia) {
+        this(idRobo, memoria, filtroColisoes, cadeia, DEFAULT_RAIO_VISAO);
+    }
+
+    /** Construtor de injeção completo (permite escolher o raio de visão). */
+    public MotorHeuristico(String idRobo, MemoriaHeuristica memoria, FiltroColisoes filtroColisoes,
+                           List<AvaliadorAcao> cadeia, int raioVisao) {
         this.idRobo = idRobo;
         this.memoria = memoria;
         this.filtroColisoes = filtroColisoes;
         this.cadeia = cadeia;
+        this.raioVisao = Math.max(0, raioVisao);
     }
 
     /**
@@ -129,6 +160,10 @@ public class MotorHeuristico {
 
             // E1 — Mapa de calor (escrita): regista a pisada deste turno (exatamente 1 vez).
             memoria.registarVisita(posicao);
+
+            // E1a — Cobertura do radar: marca como VISTAS as células à volta (raio
+            //        de visão). É o que torna a exploração eficiente (saltos).
+            memoria.marcarVistasEmRaio(posicao, raioVisao);
 
             // E1b — Mapa acumulado: junta paredes/recursos/cofres deste turno e
             //       marca como coletado um recurso que esteja na nossa posição.
