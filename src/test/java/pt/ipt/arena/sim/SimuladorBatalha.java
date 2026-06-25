@@ -2,6 +2,7 @@ package pt.ipt.arena.sim;
 
 import com.google.gson.Gson;
 
+import pt.ipt.arena.heuristica.AvaliadorQ;
 import pt.ipt.arena.heuristica.Bussola;
 import pt.ipt.arena.heuristica.MotorHeuristico;
 import pt.ipt.arena.heuristica.Postura;
@@ -402,6 +403,30 @@ public final class SimuladorBatalha {
             }
         }
         return new double[]{soma / seeds, 100.0 * primeiros / seeds, 100.0 * ultimos / seeds};
+    }
+
+    /**
+     * Corre UM episódio de treino de Q-Learning: o agente {@code aq} (1 bot)
+     * joga em free-for-all contra o {@code campo}, reutilizando toda a física do
+     * simulador. Trata o início/fim de episódio (recompensa terminal) e devolve a
+     * colocação do agente (0 = vencedor). Encapsula o acesso às posições iniciais.
+     */
+    public static int treinarEpisodio(AvaliadorQ aq, List<java.util.function.Supplier<MotorHeuristico>> campo,
+                                      long seed, int n, int nRecursos, int nCofres) {
+        SimuladorBatalha arena = new SimuladorBatalha(seed, n, nRecursos, nCofres);
+        int k = campo.size() + 1;
+        List<int[]> starts = arena.posicoesIniciais(k, seed);
+        List<Bot> bots = new ArrayList<>();
+        Bot meu = new Bot("Q", MotorHeuristico.comQ(aq), starts.get(0)[0], starts.get(0)[1]);
+        bots.add(meu);
+        for (int a = 0; a < campo.size(); a++) {
+            int[] st = starts.get(a + 1);
+            bots.add(new Bot("adv" + a, campo.get(a).get(), st[0], st[1]));
+        }
+        aq.novoEpisodio();
+        List<Bot> ranking = arena.jogar(bots);
+        aq.fimEpisodio(!meu.vivo);
+        return ranking.indexOf(meu);
     }
 
     public static void main(String[] args) {
