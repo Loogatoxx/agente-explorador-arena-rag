@@ -205,7 +205,40 @@ public class ArenaClient {
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
-        return enviarEParsear(pedido, "desbloquear");
+        return enviarDesbloqueio(pedido);
+    }
+
+    /**
+     * Envia o pedido de unlock com tratamento ESPECIAL da resposta. O servidor
+     * (FastAPI) devolve o corpo {@code null} (ou vazio) com HTTP 200 quando o
+     * unlock TEM SUCESSO — confirmado ao vivo pela recompensa de +HP no cofre.
+     * Os casos de erro/recusa devolvem um objeto JSON ({@code {"status": ...}}).
+     * Por isso, um corpo nulo/vazio com 200 é normalizado para
+     * {@code {"status":"sucesso"}}; uma falha de rede continua a devolver
+     * {@code null} (inconclusivo).
+     */
+    private JsonObject enviarDesbloqueio(HttpRequest pedido) {
+        try {
+            HttpResponse<String> resposta = http.send(pedido, BodyHandlers.ofString());
+            String corpo = resposta.body() == null ? "" : resposta.body().trim();
+            if (resposta.statusCode() == 200 && (corpo.isEmpty() || "null".equalsIgnoreCase(corpo))) {
+                JsonObject sucesso = new JsonObject();
+                sucesso.addProperty("status", "sucesso");
+                return sucesso;
+            }
+            JsonElement elemento = JsonParser.parseString(corpo);
+            return elemento.isJsonObject() ? elemento.getAsJsonObject() : null;
+        } catch (java.io.IOException e) {
+            System.err.println("[ArenaClient] Falha de rede em 'desbloquear': " + e.getMessage());
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("[ArenaClient] Pedido 'desbloquear' interrompido.");
+            return null;
+        } catch (RuntimeException e) {
+            System.err.println("[ArenaClient] Resposta inválida em 'desbloquear': " + e.getMessage());
+            return null;
+        }
     }
 
     /** Envia um pedido e devolve o corpo da resposta como texto cru (ex.: manual). */
