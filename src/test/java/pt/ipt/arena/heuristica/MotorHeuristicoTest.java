@@ -12,6 +12,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testes comportamentais do {@link MotorHeuristico}, sem servidor nem Ollama.
@@ -108,6 +109,15 @@ class MotorHeuristicoTest {
         Acao acao = motor.decidir(null);
         assertNotNull(acao, "decidir() nunca devolve null");
         assertEquals(Acao.MOVER_NORTE, acao, "ação segura determinista");
+    }
+
+    @Test
+    void radarMarcaQuadradoDeCelulasVistas() {
+        MemoriaHeuristica m = new MemoriaHeuristica();
+        m.marcarVistasEmRaio(new pt.ipt.arena.modelo.Coordenada(10, 10), 2);
+        assertEquals(25, m.celulasVistas().size(), "raio 2 = quadrado 5x5 = 25 células");
+        assertTrue(m.celulasVistas().contains("12,8"), "deve incluir o canto (dx=+2, dy=-2)");
+        assertTrue(!m.celulasVistas().contains("13,10"), "dx=+3 está fora do raio 2");
     }
 
     @Test
