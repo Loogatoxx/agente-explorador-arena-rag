@@ -972,3 +972,18 @@ jogos perdidos do melhor bot e ver como aumentar as hipóteses / jogar com a RNG
   jogada é baixar a variância (conservar) — o que a tartaruga faz. Relatório:
   `docs/Relatorio_Analise_Combate.md`. 42 testes verdes.
 
+## 2026-06-26 — Etapa: Análise profunda das derrotas + replay visual de combate
+
+**Prompt (Carlos):** se só ~3,5% das derrotas são spawn, porque não ganhamos
+mais? De que morre o bot? Análise detalhada + soluções + relatório + simulação
+visual para analisar.
+
+- `AnaliseProfunda` (400 seeds): **66% de vitórias**; das não-vitórias, **94,8%
+  são MORTES** (78% tardias), e quem nos vence é o `Equilibrado`/`Oportunista`.
+  Não é spawn nem desempate de HP — é a mêlée do meio-fim.
+- Testámos **ripostar mais** (margem de combate baixa): **PIOR** (atacar mata
+  mais; fugir/margem 90 é o menos mau). Estamos perto do teto desta família.
+- `GravadorCombate` gera `docs/simulacao_combate.html`: replay animado (1 derrota
+  clara — seed 12, 5.º, morte t114 — e 1 vitória), bot azul = NOSSO, para análise
+  visual. Relatório: `docs/Relatorio_Porque_Perdemos.md`. 42 testes verdes.
+
