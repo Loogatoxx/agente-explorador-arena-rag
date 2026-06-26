@@ -96,6 +96,23 @@ public class MotorHeuristico {
                 cadeiaOtimizada(margem));
     }
 
+    /**
+     * Combo com margem de COMBATE e de CONSERVAÇÃO à medida (benchmark). Margem de
+     * combate mais baixa = ataca/ripostar mais cedo (converte a vantagem de HP da
+     * tartaruga em abates quando finalmente é engajado).
+     */
+    public static MotorHeuristico comCombateEConservacao(int margemBatalha, int margemConservacao) {
+        return new MotorHeuristico("combo", new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(new AvaliadorReflexos(),
+                        new AvaliadorBatalha(0, margemBatalha, true),
+                        new AvaliadorAspirador(),
+                        new AvaliadorEsquiva(),
+                        new AvaliadorAlvo(),
+                        new AvaliadorConservacao(margemConservacao),
+                        new AvaliadorCanto(),
+                        new AvaliadorExploracao()));
+    }
+
     public static MotorHeuristico comExploracaoRaio(String idRobo, int raioVisao) {
         return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 cadeiaOtimizada(), raioVisao);

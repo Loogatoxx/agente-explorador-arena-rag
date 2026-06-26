@@ -180,6 +180,18 @@ public final class SimuladorBatalha {
 
     /** Corre uma partida e devolve os bots por ordem de classificação (índice 0 = vencedor). */
     List<Bot> jogar(List<Bot> bots) {
+        return jogar(bots, null);
+    }
+
+    /**
+     * Igual, mas chama {@code gravador} no início e no fim de cada turno (para
+     * registar um replay). A versão sem gravador delega aqui com {@code null} —
+     * os benchmarks não pagam qualquer custo.
+     */
+    List<Bot> jogar(List<Bot> bots, Runnable gravador) {
+        if (gravador != null) {
+            gravador.run();
+        }
         for (int t = 0; t < MAX_TURNOS; t++) {
             Map<Bot, Acao> acoes = new HashMap<>();
             Map<String, Bot> ocupado = new HashMap<>();
@@ -237,6 +249,9 @@ public final class SimuladorBatalha {
                 if (b.vivo) {
                     vivos++;
                 }
+            }
+            if (gravador != null) {
+                gravador.run();
             }
             if (vivos <= 1) {
                 break;
@@ -438,6 +453,135 @@ public final class SimuladorBatalha {
             }
         }
         return new double[]{soma / seeds, 100.0 * primeiros / seeds, 100.0 * ultimos / seeds};
+    }
+
+    /**
+     * Grava uma partida em JSON para replay visual: dimensão, paredes, nomes dos
+     * bots e, por turno, a posição/HP/estado de cada bot e os cofres/recursos
+     * restantes. O bot 0 é "NOSSO".
+     */
+    /** Replay gravado + desfecho do NOSSO bot (para escolher derrotas/vitórias). */
+    public static final class Gravacao {
+        public String json;
+        public int colocacao;
+        public int morteNosso;
+    }
+
+    public static Gravacao gravarPartidaJson(java.util.function.Supplier<MotorHeuristico> nosso,
+                                             List<String> nomes,
+                                             List<java.util.function.Supplier<MotorHeuristico>> adversarios,
+                                             long seed, int n, int nRecursos, int nCofres) {
+        SimuladorBatalha arena = new SimuladorBatalha(seed, n, nRecursos, nCofres);
+        int k = adversarios.size() + 1;
+        List<int[]> starts = arena.posicoesIniciais(k, seed);
+        List<Bot> bots = new ArrayList<>();
+        StringBuilder nomesJson = new StringBuilder();
+        bots.add(new Bot("NOSSO", nosso.get(), starts.get(0)[0], starts.get(0)[1]));
+        nomesJson.append("\"NOSSO\"");
+        for (int a = 0; a < adversarios.size(); a++) {
+            int[] st = starts.get(a + 1);
+            bots.add(new Bot(nomes.get(a), adversarios.get(a).get(), st[0], st[1]));
+            nomesJson.append(",\"").append(nomes.get(a)).append('"');
+        }
+
+        StringBuilder frames = new StringBuilder();
+        Runnable rec = () -> {
+            if (frames.length() > 0) {
+                frames.append(',');
+            }
+            frames.append("{\"b\":[");
+            for (int i = 0; i < bots.size(); i++) {
+                Bot b = bots.get(i);
+                if (i > 0) {
+                    frames.append(',');
+                }
+                frames.append('[').append(b.x).append(',').append(b.y).append(',')
+                        .append(Math.max(0, b.hp)).append(',').append(b.vivo ? 1 : 0).append(']');
+            }
+            frames.append("],\"c\":[").append(chavesParaJson(arena.cofres))
+                    .append("],\"r\":[").append(chavesParaJson(arena.recursos)).append("]}");
+        };
+        List<Bot> ranking = arena.jogar(bots, rec);
+        Bot meu = bots.get(0);
+
+        StringBuilder paredes = new StringBuilder();
+        for (int i = 0; i < arena.n; i++) {
+            for (int j = 0; j < arena.n; j++) {
+                if (arena.parede[i][j]) {
+                    if (paredes.length() > 0) {
+                        paredes.append(',');
+                    }
+                    paredes.append('[').append(i).append(',').append(j).append(']');
+                }
+            }
+        }
+        Gravacao g = new Gravacao();
+        g.colocacao = ranking.indexOf(meu);
+        g.morteNosso = meu.vivo ? -1 : meu.morteTurno;
+        g.json = "{\"seed\":" + seed + ",\"n\":" + n + ",\"coloc\":" + g.colocacao
+                + ",\"morte\":" + g.morteNosso + ",\"nomes\":[" + nomesJson
+                + "],\"paredes\":[" + paredes + "],\"frames\":[" + frames + "]}";
+        return g;
+    }
+
+    private static String chavesParaJson(java.util.Collection<String> chaves) {
+        StringBuilder sb = new StringBuilder();
+        for (String c : chaves) {
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append('[').append(c).append(']');
+        }
+        return sb.toString();
+    }
+
+    /** Resultado detalhado de uma partida, para análise das não-vitórias. */
+    public static final class ResultadoPartida {
+        public int colocacao;      // 0 = vencemos
+        public int morteNosso;     // -1 se sobrevivemos
+        public int hpNosso;
+        public String vencedor;    // nome do 1.º classificado
+        public int hpVencedor;
+        public int morteVencedor;  // -1 se sobreviveu
+        public int sobreviventes;  // quantos vivos no fim
+    }
+
+    /**
+     * Corre UMA partida (com nomes nos adversários) e devolve o resultado
+     * detalhado: a nossa colocação/morte/HP e os do VENCEDOR — para perceber
+     * porque NÃO ganhámos (morremos? ou sobrevivemos mas com menos HP que outro?).
+     */
+    public static ResultadoPartida analisarDetalhado(java.util.function.Supplier<MotorHeuristico> nosso,
+                                                     List<String> nomes,
+                                                     List<java.util.function.Supplier<MotorHeuristico>> adversarios,
+                                                     long seed, int n, int nRecursos, int nCofres) {
+        int k = adversarios.size() + 1;
+        SimuladorBatalha arena = new SimuladorBatalha(seed, n, nRecursos, nCofres);
+        List<int[]> starts = arena.posicoesIniciais(k, seed);
+        List<Bot> bots = new ArrayList<>();
+        Bot meu = new Bot("NOSSO", nosso.get(), starts.get(0)[0], starts.get(0)[1]);
+        bots.add(meu);
+        for (int a = 0; a < adversarios.size(); a++) {
+            int[] st = starts.get(a + 1);
+            bots.add(new Bot(nomes.get(a), adversarios.get(a).get(), st[0], st[1]));
+        }
+        List<Bot> ranking = arena.jogar(bots);
+        ResultadoPartida r = new ResultadoPartida();
+        r.colocacao = ranking.indexOf(meu);
+        r.morteNosso = meu.vivo ? -1 : meu.morteTurno;
+        r.hpNosso = meu.hp;
+        Bot venc = ranking.get(0);
+        r.vencedor = venc.nome;
+        r.hpVencedor = venc.hp;
+        r.morteVencedor = venc.vivo ? -1 : venc.morteTurno;
+        int surv = 0;
+        for (Bot b : bots) {
+            if (b.vivo) {
+                surv++;
+            }
+        }
+        r.sobreviventes = surv;
+        return r;
     }
 
     /**
