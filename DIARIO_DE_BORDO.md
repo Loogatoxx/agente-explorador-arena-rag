@@ -953,3 +953,22 @@ em solo e com loot por apanhar), pelo que o robô perdia HP no canto e era abati
 **6.14 → 6.327** (44% de 1.os lugares) e **1v1 médio 63.5% → 68.3%**. 42 testes
 verdes (+3). A boa intuição do Antigravity, agora bem colocada e medida.
 
+## 2026-06-26 — Etapa: Análise de combate + estratégia TARTARUGA (grande salto)
+
+**Prompt (Carlos):** com a nova mecânica de conservação em mente, procurar
+variantes que superem o estado atual, explorar mecânicas novas, analisar os
+jogos perdidos do melhor bot e ver como aumentar as hipóteses / jogar com a RNG.
+
+**O que se fez (tudo medido):**
+- `AnaliseBatalha`: classificou as derrotas — **86,8% eram "morte tarde"**
+  (sangrávamos HP a andar à toa); os piores jogos eram **maus spawns** (mortos
+  cedo com todos os rivais vivos).
+- `VariantesConservacao`: varreu a margem de conservação (400 seeds). Descoberta:
+  **conservar mesmo um pouco atrás vence** (deixar os agressivos entre-matarem-se).
+  Novo default **margem = -150** ("tartaruga"; volta a procurar loot se >150 atrás).
+- Resultado: nav solo intacta (30/30); battle royale **6.20 → ~6.85/8** (~69% de
+  1.ºs); **1v1 médio 68% → 84,7%** (ganha até aos agressores).
+- RNG: os ~3,5% de derrotas que restam são maus spawns (irredutíveis); a melhor
+  jogada é baixar a variância (conservar) — o que a tartaruga faz. Relatório:
+  `docs/Relatorio_Analise_Combate.md`. 42 testes verdes.
+

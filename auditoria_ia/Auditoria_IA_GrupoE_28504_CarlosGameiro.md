@@ -426,3 +426,25 @@ tentado isto mas campava demais, mesmo em solo.)
 - Cada movimento custa HP: em vantagem, parar é jogar. E separar solo de PvP por
   "já vimos um rival" é simples e robusto. Medir antes de adotar (de novo).
 
+---
+
+## Interação #N — Análise de combate e estratégia tartaruga (2026-06-26)
+
+### O meu Prompt
+Pedi para, com a mecânica de conservação em mente, procurar variantes melhores,
+explorar mecânicas novas, analisar porque o melhor bot perde certos jogos, e ver
+como aumentar as hipóteses / pôr a RNG a nosso favor.
+
+### A Resposta da IA
+- Construiu ferramentas de diagnóstico e MEDIU: a maioria das derrotas era por
+  sangrar HP a andar; varreu a margem de conservação e descobriu que **conservar
+  mesmo um pouco atrás** é muito melhor (estratégia "tartaruga", margem -150).
+- Resultado medido: battle royale 6.20 → ~6.85; 1v1 68% → 84,7%; nav solo intacta.
+- Sobre a RNG: identificou que as derrotas restantes são maus spawns
+  (irredutíveis no servidor real) e que a jogada certa é minimizar a variância.
+
+### O que retive
+- Analisar PORQUE se perde (com dados) leva a ganhos grandes: a intuição "andar
+  é mau quando se tem vantagem" tornou-se "conservar quase sempre vence". E saber
+  distinguir o que é estratégia do que é azar (spawn) é parte da resposta.
+
