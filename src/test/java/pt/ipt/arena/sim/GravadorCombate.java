@@ -26,26 +26,39 @@ public final class GravadorCombate {
         List<Supplier<MotorHeuristico>> advs = new ArrayList<>(perfis.values());
         Supplier<MotorHeuristico> combo = () -> new MotorHeuristico("combo");
 
-        String derrota = null;
+        // Procura uma DERROTA clara (5.º lugar ou pior, por morte) — mais
+        // instrutiva — e uma VITÓRIA. Vai relaxando o critério se não achar.
+        String derrota = procurar(combo, nomes, advs, 4); // colocacao >= 4 (5.º+)
+        if (derrota == null) {
+            derrota = procurar(combo, nomes, advs, 2); // 3.º+
+        }
+        if (derrota == null) {
+            derrota = procurar(combo, nomes, advs, 1); // qualquer não-vitória
+        }
         String vitoria = null;
-        for (int s = 0; s < 400 && (derrota == null || vitoria == null); s++) {
+        for (int s = 0; s < 400 && vitoria == null; s++) {
             SimuladorBatalha.Gravacao g = SimuladorBatalha.gravarPartidaJson(combo, nomes, advs, s, 17, 8, 4);
-            if (derrota == null && g.colocacao > 0 && g.morteNosso >= 50) {
-                derrota = g.json; // derrota por morte TARDIA (o caso típico)
-            }
-            if (vitoria == null && g.colocacao == 0) {
+            if (g.colocacao == 0) {
                 vitoria = g.json;
             }
         }
-        if (derrota == null) {
-            for (int s = 0; s < 400 && derrota == null; s++) {
-                SimuladorBatalha.Gravacao g = SimuladorBatalha.gravarPartidaJson(combo, nomes, advs, s, 17, 8, 4);
-                if (g.colocacao > 0 && g.morteNosso >= 0) {
-                    derrota = g.json;
-                }
+
+        geraHtml(derrota, vitoria);
+    }
+
+    /** Devolve o JSON da 1.ª partida em que colocamos >= colocacaoMin e morremos. */
+    private static String procurar(Supplier<MotorHeuristico> combo, List<String> nomes,
+                                   List<Supplier<MotorHeuristico>> advs, int colocacaoMin) {
+        for (int s = 0; s < 400; s++) {
+            SimuladorBatalha.Gravacao g = SimuladorBatalha.gravarPartidaJson(combo, nomes, advs, s, 17, 8, 4);
+            if (g.colocacao >= colocacaoMin && g.morteNosso >= 0) {
+                return g.json;
             }
         }
+        return null;
+    }
 
+    private static void geraHtml(String derrota, String vitoria) throws Exception {
         String html = PAGINA
                 .replace("\"__DERROTA__\"", derrota == null ? "null" : derrota)
                 .replace("\"__VITORIA__\"", vitoria == null ? "null" : vitoria);
