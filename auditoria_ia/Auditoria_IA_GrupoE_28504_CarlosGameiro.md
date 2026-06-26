@@ -356,4 +356,26 @@ meu MacBook (sem gastar créditos API), com carta-branca no design e na matemát
   afinado com pathfinding. O valor está no **sistema autónomo** (e no plano para
   o híbrido), medido com honestidade — não em prometer milagres.
 
+---
+
+## Interação #16 — Q-Learning híbrido (tática aprendida + BFS) (2026-06-26)
+
+### O meu Prompt
+Validei o diagnóstico (BFS vs Q cego) e pedi o **híbrido**: o ML escolhe só a
+TÁTICA (postura), a navegação fica no BFS. Estado 100% combate, recompensa
+"abutre" (kills grátis premiados, dano em mêlée penalizado). Bater o combo.
+
+### A Resposta da IA
+- Implementou `AvaliadorQHibrido` (postura → execução delegada às regras), estado
+  de combate, recompensa abutre + **recompensa terminal por colocação**.
+- Treinou localmente e mediu a progressão: **4.73 (Q puro) → 5.71 (híbrido)**, vs
+  combo **5.99** — fechou ~80% da diferença, ficou ombro-a-ombro.
+- Tentou um tuning mais agressivo, mediu que **piorava (5.05)** e **reverteu**.
+- Foi honesto: o híbrido é competitivo mas ainda não passou o combo; deu o caminho.
+
+### O que retive
+- A boa engenharia de ML aqui foi **separar tática de movimento** (intuição
+  forte) + **alinhar a recompensa com o objetivo** (colocação). E, de novo,
+  afinar pesos "a olho" piora — só a medição decide.
+
 

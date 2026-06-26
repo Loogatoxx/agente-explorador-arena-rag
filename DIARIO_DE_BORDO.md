@@ -860,3 +860,31 @@ sem API na malha de treino. Carta-branca no design e na matemática.
 ### Estado
 - **36 testes verdes** (+4: `QLearningTest`). Relatório em
   `docs/Relatorio_ML_QLearning.md`. Commits progressivos + push + sync iCloud.
+
+## 2026-06-26 — Etapa 26: Q-Learning HÍBRIDO (tática aprendida + execução BFS)
+
+**Prompt (Carlos):** o diagnóstico (BFS vs Q cego) estava certo → ir direto ao
+**híbrido**. O ML escolhe a TÁTICA (postura), a execução do passo fica nas regras
+BFS. Estado 100% combate; recompensa "abutre". Bater o combo (~6.0) em BR.
+
+### Desenho
+- **Ações = posturas:** AGRESSIVIDADE / ESQUIVA / RECUO_CURA / IGNORAR. A execução
+  delega no Aspirador/Alvo/Esquiva/Canto/Exploração (mesma recolha do combo).
+- **Estado (~108):** patamar HP × vantagem × densidade (1v1 vs mêlée) × cura
+  conhecida × rematável adjacente.
+- **Recompensa:** Δhp + sobreviver + **abate** − **dano em mêlée** + **terminal por
+  COLOCAÇÃO** (alinha com ganhar). Interface `AgenteQ` comum (puro/híbrido).
+
+### Resultados (greedy, 200 seeds)
+- Q puro **4.73** → híbrido **5.48** → +recompensa de colocação **5.71** (combo **5.99**).
+- Fechou ~80% da diferença; ficou **ombro-a-ombro** com o combo (22.5% de 1.ºs).
+- Tuning agressivo (abate/colocação fortes) → **PIOR (5.05)**, revertido. Lição
+  repetida: afinar a recompensa a olho costuma piorar — medir sempre.
+
+### Honestidade
+- O combo (muito otimizado) ainda lidera por pouco. O híbrido é a arquitetura
+  certa e está competitivo; superá-lo pede estado mais rico / mais tuning medido.
+
+### Estado
+- **39 testes verdes** (+3: `QHibridoTest`). Relatório em
+  `docs/Relatorio_ML_Hibrido.md`. Commits progressivos + push + sync iCloud.
