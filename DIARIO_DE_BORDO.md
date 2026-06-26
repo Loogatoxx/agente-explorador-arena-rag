@@ -888,3 +888,32 @@ BFS. Estado 100% combate; recompensa "abutre". Bater o combo (~6.0) em BR.
 ### Estado
 - **39 testes verdes** (+3: `QHibridoTest`). Relatório em
   `docs/Relatorio_ML_Hibrido.md`. Commits progressivos + push + sync iCloud.
+
+## 2026-06-26 — Etapa 27: V3 do ML (visão enriquecida + Grid Search) e DECISÃO final
+
+**Prompt (Carlos):** artilharia pesada — enriquecer o estado (distância cura/inimigo,
+"posso abater?"), Grid Search automático dos pesos, e **multithreading** para
+acelerar. Bater o combo (6.0+).
+
+### O que se fez
+- **Estado enriquecido** (~486 estados, sem explodir): + distância da cura (3
+  níveis) + distância do inimigo (3 níveis) + "posso abatê-lo?" (≤15 HP).
+- **`RecompensaQ`** (pesos parametrizáveis) + **`GridSearchQ` MULTITHREADED**
+  (`parallelStream`, 8 combos em paralelo nos 10 núcleos) + **avaliação paralela**
+  (`avaliarContraParalelo`); `TabelaQ` thread-safe em leitura.
+
+### O VIÉS DO VENCEDOR (lição central)
+- Grid Search a **80 seeds** → melhor combo a **6.138** (parecia vitória!).
+- Re-medição a **500 seeds** → **5.66** vs combo **6.14**. Era ruído de amostra
+  pequena. **Verificámos e corrigimos** — rigor científico. Causa: 486 estados com
+  poucos episódios = subtreinado. Confirmou-se que os melhores pesos eram os
+  equilibrados (o levador era a VISÃO, não os pesos).
+
+### DECISÃO FINAL do projeto
+- 🏆 **Campeão do torneio = combo heurístico** (Sense-Think-Act, BFS, ~6.14, já é
+  a versão entregue em `AgenteExplorador`).
+- 🎓 **ML = prova de excelência** para a oral. Cheat sheet: `docs/Cheatsheet_Oral_ML.md`.
+- Treino longo (18k) a correr em fundo para o score honesto final.
+
+### Estado
+- **39 testes verdes**. Relatório atualizado + cheat sheet da oral. Commits + push.

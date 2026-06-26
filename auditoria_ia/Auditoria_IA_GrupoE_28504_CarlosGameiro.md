@@ -378,4 +378,28 @@ TÁTICA (postura), a navegação fica no BFS. Estado 100% combate, recompensa
   forte) + **alinhar a recompensa com o objetivo** (colocação). E, de novo,
   afinar pesos "a olho" piora — só a medição decide.
 
+---
+
+## Interação #17 — V3 do ML, viés do vencedor e decisão final (2026-06-26)
+
+### O meu Prompt
+Pedi a artilharia pesada (estado enriquecido, Grid Search automático, multithreading)
+para bater o combo. Depois, com o resultado honesto, decidi: **combo = campeão do
+torneio, ML = masterclass para a oral**, e pedi a documentação final.
+
+### A Resposta da IA
+- Implementou o estado enriquecido, `RecompensaQ`, `GridSearchQ` **multithreaded**
+  (parallelStream) e avaliação paralela.
+- O Grid Search a 80 seeds deu 6.138 (parecia bater o combo); a IA **re-mediu a 500
+  seeds** → 5.66 vs 6.14 e identificou o **viés do vencedor** — corrigiu sozinha,
+  sem eu pedir.
+- Aceitou a decisão estratégica: documentou tudo no relatório e preparou um
+  **cheat sheet de oral** ("Sense-Think-Act vs ML") com argumentos e respostas a
+  prováveis perguntas do professor.
+
+### O que retive
+- O reflexo de **verificar com mais seeds** antes de festejar é a marca de ML a
+  sério. E saber **escolher a ferramenta certa** (combo no torneio, ML como prova)
+  vale mais do que forçar o ML a ganhar.
+
 
