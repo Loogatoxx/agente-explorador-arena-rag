@@ -121,10 +121,11 @@ public class PainelMapaCalor extends JPanel {
                 int ax = centroX + (gx - RAIO);
                 int ay = centroY + (gy - RAIO);
                 String chave = ax + "," + ay;
-                // O painel é só telemetria: espelha-se nos DOIS eixos para a
-                // orientação bater certo com a vista 3D real da arena (cima/baixo
-                // e esquerda/direita). NÃO afeta a lógica de movimento (correta).
-                int px = origem + (lado - 1 - gx) * cs;
+                // O painel é só telemetria: espelha-se APENAS o eixo Y para a
+                // orientação (cima/baixo) bater certo com a vista 3D real da arena.
+                // O X fica como está (esquerda/direita já corretas). NÃO afeta a
+                // lógica de movimento (correta).
+                int px = origem + gx * cs;
                 int py = origem + (lado - 1 - gy) * cs;
 
                 g2.setColor(corMapaCalor(mapaCalor.getOrDefault(chave, 0)));
