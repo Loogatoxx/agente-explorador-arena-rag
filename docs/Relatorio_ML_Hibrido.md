@@ -88,9 +88,10 @@ java -cp "target/classes:target/test-classes:$GSON" pt.ipt.arena.sim.TreinadorQ 
   ENTREGUE (`AgenteExplorador` usa `new MotorHeuristico(id)`): pathfinding BFS
   perfeito, 30/30 navegação, ~6.14/8 em battle royale, robusto e determinista.
 - 🎓 **O Q-Learning é a nossa "prova de excelência".** Mostra um percurso de ML
-  honesto: Q puro 4.73 → híbrido 5.48 → +colocação 5.71 → V3 (visão) ≈ combo,
-  com a descoberta e correção do viés do vencedor pelo meio. _(Score final do
-  treino longo de 18k a 500 seeds: ver nota no fim.)_
+  honesto: Q puro 4.73 → híbrido 5.48 → +colocação 5.71 → **V3 (visão) treino
+  longo de 18k = 5.82/8 a 500 seeds** (vs combo **6.06**). O ML chega perto mas o
+  BFS perito mantém ~0.25 de vantagem — e sabemos explicar porquê (§7). Nota: a
+  tabela estabiliza em ~189 estados (o espaço de combate REAL é esse, não 486).
 
 **Porque é que uma heurística perita com BFS é tão difícil de bater por um RL
 tabular com treino limitado?** Porque o combo já incorpora conhecimento ótimo

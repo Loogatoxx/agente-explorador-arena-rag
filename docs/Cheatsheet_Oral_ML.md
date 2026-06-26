@@ -46,9 +46,10 @@ simuladores rápidos.
 ## 3. O resultado HONESTO (e porque é uma força, não uma fraqueza)
 
 Progressão medida: Q puro **4.73** → híbrido **5.48** → +recompensa de colocação
-**5.71** → V3 com visão enriquecida **≈ nível do combo**.
+**5.71** → V3 com visão enriquecida (treino 18k) **5.82/8** (a 500 seeds).
 
-**O combo (heurística) continua campeão (~6.14).** E sabemos explicar PORQUÊ:
+**O combo (heurística) continua campeão (~6.06), +0.25 à frente.** E sabemos
+explicar PORQUÊ:
 
 > Uma heurística perita com **BFS** já incorpora conhecimento ótimo (caminho mais
 > curto, prioridade a curas, evasão). Um **RL tabular** tem de *descobrir* tudo a

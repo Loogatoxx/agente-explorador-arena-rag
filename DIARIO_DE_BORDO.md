@@ -913,7 +913,8 @@ acelerar. Bater o combo (6.0+).
 - 🏆 **Campeão do torneio = combo heurístico** (Sense-Think-Act, BFS, ~6.14, já é
   a versão entregue em `AgenteExplorador`).
 - 🎓 **ML = prova de excelência** para a oral. Cheat sheet: `docs/Cheatsheet_Oral_ML.md`.
-- Treino longo (18k) a correr em fundo para o score honesto final.
+- **Score honesto final (treino 18k, 500 seeds): Q-híbrido V3 = 5.82 vs combo 6.06**
+  (combo +0.25). A tabela estabiliza em ~189 estados. Decisão confirmada.
 
 ### Estado
 - **39 testes verdes**. Relatório atualizado + cheat sheet da oral. Commits + push.
