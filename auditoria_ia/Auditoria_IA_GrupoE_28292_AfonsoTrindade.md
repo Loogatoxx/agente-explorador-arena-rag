@@ -103,4 +103,24 @@ Em conjunto com o Carlos, decidimos avançar com a opção C — a interface gr�
 - Validou o resultado renderizando o painel para um PNG (`docs/dashboard.png`),
   confirmando-o visualmente, sem regressões nos 15 testes.
 
+---
+
+## Interação (Afonso) — Correção da orientação do painel de telemetria (2026-06-26)
+
+### O meu Prompt
+Reparei que a telemetria (`PainelMapaCalor`) estava **invertida** face à vista 3D
+real da arena: quando o robô ia para cima, o painel mostrava para baixo, e
+esquerda/direita trocadas. Pedi para corrigir.
+
+### A Resposta da IA
+- Confirmou que a **lógica de movimento está correta** (eixos validados ao vivo,
+  o robô abre cofres) — o problema era **só de desenho** no painel.
+- Espelhou os **dois eixos** no render (`px`/`py` passam a usar `lado-1-gx` e
+  `lado-1-gy`), para a orientação do painel bater certo com a arena real. Mudança
+  só de UI, sem impacto na navegação. Compila e mantém os testes verdes.
+
+### O que retive
+- Separar "lógica" de "apresentação": o bug era de display, não de decisão. A
+  correção é local, segura e reversível (um painel é só telemetria).
+
 

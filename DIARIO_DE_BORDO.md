@@ -918,3 +918,13 @@ acelerar. Bater o combo (6.0+).
 
 ### Estado
 - **39 testes verdes**. Relatório atualizado + cheat sheet da oral. Commits + push.
+
+## 2026-06-26 — Correção (Afonso): orientação do painel de telemetria
+
+**Prompt (Afonso):** a telemetria do `PainelMapaCalor` estava invertida face à
+vista 3D real (cima/baixo e esquerda/direita trocados). A lógica de movimento
+está correta (eixos validados ao vivo); o bug era só de desenho.
+
+- Espelharam-se os **dois eixos** no render (`px`/`py` via `lado-1-gx`/`lado-1-gy`)
+  para a orientação do painel bater certo com a arena real. Mudança só de UI,
+  sem impacto na navegação. Compila; testes verdes.
