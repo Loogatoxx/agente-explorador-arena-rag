@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 14mm 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color:#1f2933; font-size:10.3px; line-height:1.42; margin:0; }
+  h1 { color:#1a3a5c; text-align:center; font-size:21px; margin:0 0 2px; }
+  .sub { text-align:center; color:#5b6b7b; font-size:10px; border-bottom:2px solid #1a3a5c; padding-bottom:7px; margin-bottom:11px; }
+  h2 { color:#1a3a5c; font-size:13px; border-bottom:1px solid #cdd7e0; padding-bottom:2px; margin:13px 0 5px; }
+  h2.ml { color:#1f7a5c; border-bottom-color:#bfe0d3; }
+  h3 { color:#2a6f8f; font-size:10.6px; margin:7px 0 1px; }
+  p { margin:3px 0; }
+  ul { margin:3px 0 3px 16px; padding:0; }
+  li { margin:1.5px 0; }
+  b, strong { color:#102a43; }
+  table { width:100%; border-collapse:collapse; margin:4px 0; }
+  th { background:#1a3a5c; color:#fff; text-align:left; padding:3px 6px; font-size:9.6px; }
+  td { border:1px solid #d9e0e7; padding:3px 6px; vertical-align:top; }
+  td.c { font-family:"SF Mono",Menlo,monospace; color:#0b3a6b; white-space:nowrap; }
+  .qa b { color:#1a3a5c; }
+  .win { background:#eef7f1; border-left:3px solid #1f7a5c; padding:5px 8px; margin:5px 0; }
+  .num { background:#f3f6f9; border-left:3px solid #1a3a5c; padding:5px 8px; }
+  .foot { margin-top:10px; padding-top:6px; border-top:1px solid #cdd7e0; color:#5b6b7b; font-size:9px; }
+  .avoid { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>Cheat Sheet — Defesa Oral (v2)</h1>
+<div class="sub">Agente Explorador na Arena 3D RAG &nbsp;|&nbsp; Grupo E &nbsp;|&nbsp; Carlos Gameiro (n.º 28504) · Afonso Trindade (n.º 28292)</div>
+
+<div class="avoid">
+<h2>1. Resumo em 20 segundos</h2>
+<p>Cliente autónomo em <b>Java</b> que controla 100% sozinho um robô numa arena. Liga-se por <b>REST API</b> ao servidor (o "mundo físico"), percebe o radar, <b>decide por heurística</b> (Sense-Think-Act) para onde ir, e resolve os enigmas dos cofres com um <b>pipeline RAG</b> numa IA local (<b>Ollama</b>). Validado <b>AO VIVO</b> no servidor real: navega aos saltos, abre cofres e domina o combate. Por cima, construímos um agente de <b>Machine Learning</b> (Q-Learning) como prova de excelência.</p>
+</div>
+
+<div class="avoid">
+<h2>2. Arquitetura (responsabilidade única, anti "Classe Deus")</h2>
+<table>
+<tr><th>Classe</th><th>Responsabilidade</th></tr>
+<tr><td><b>AgenteExplorador</b></td><td>Main + orquestra o ciclo Sense-Think-Act (delega tudo).</td></tr>
+<tr><td><b>ArenaClient</b></td><td>HTTP REST com a Arena: register / perceive / action / unlock / manual.</td></tr>
+<tr><td><b>OllamaClient</b></td><td>IA local: embeddings (nomic-embed-text) + geração (qwen2.5-coder).</td></tr>
+<tr><td><b>ia/PipelineRag</b></td><td>Orquestra o RAG (chunking, cosseno, ChatML, unlock).</td></tr>
+<tr><td><b>heuristica/*</b></td><td>Motor de decisão: Bússola, Pathfinder, Memória, avaliadores.</td></tr>
+<tr><td><b>heuristica (ML)</b></td><td>EstadoQ, TabelaQ, AvaliadorQ/Híbrido: Q-Learning (bónus de excelência).</td></tr>
+<tr><td><b>PainelMapaCalor</b></td><td>Interface Swing: radar + mapa de calor + telemetria.</td></tr>
+</table>
+<p><b>Porque não é Classe Deus:</b> cada classe tem 1 responsabilidade (SRP). Quem fala com a rede não desenha ecrãs; quem processa IA não trata da locomoção.</p>
+</div>
+
+<div class="avoid">
+<h2>3. Ciclo de vida (Sense-Think-Act)</h2>
+<p><b>SENSE:</b> ArenaClient.percecionar() → JSON (Gson → Percecao). <b>THINK:</b> MotorHeuristico.decidir(percecao) → uma Acao. <b>ACT:</b> ArenaClient.agir(acao); se estiver num cofre, PipelineRag resolve o enigma. Fim de cada volta: <b>Thread.sleep(400 ms)</b> (folga anti-flood — uma só chamada de servidor por turno).</p>
+</div>
+
+<div class="avoid">
+<h2>4. Pipeline RAG (o coração do projeto)</h2>
+<p>1) Descarrega o manual. 2) Parte em <b>chunks</b> (por linha). 3) Vetoriza com <b>nomic-embed-text</b>. 4) Perante um enigma: vetoriza-o e procura por <b>cosseno</b>; o LLM recebe <b>só a melhor secção (top-1)</b>. 5) Prompt <b>ChatML</b> + <b>qwen2.5-coder:0.5b</b> gera a chave. 6) Submete em /unlock.</p>
+<p><b>Decisões-chave:</b> temperatura <b>0.0</b> (determinismo); ChatML em Java + raw=true (resposta = só a chave); rede de segurança que extrai o código por regex se o LLM falhar. <b>Sucesso = corpo "null" (HTTP 200) + recompensa de HP</b> — reconhecido como sucesso.</p>
+</div>
+
+<div class="avoid">
+<h2>5. Motor heurístico (navegação inteligente)</h2>
+<p>Pipeline de avaliadores (padrão Strategy), por prioridade: <b>Reflexos → Batalha → Aspirador → Esquiva → Alvo → Canto → Exploração</b>. O 1.º a decidir ganha.</p>
+<ul>
+<li><b>Bússola:</b> único sítio que conhece os eixos (Acao → dx,dy); incerteza do Y = 1 booleano (confirmado ao vivo).</li>
+<li><b>Pathfinder (BFS):</b> caminho mais curto a contornar paredes (não guloso — o guloso fazia só 6/30).</li>
+<li><b>Exploração AOS SALTOS:</b> marca como "visto" o quadrado do radar (raio 3) e vai à célula NÃO VISTA mais próxima → ~4× mais rápida que pisar tudo, sem deixar buracos.</li>
+<li><b>Aprende com bloqueios:</b> movimento recusado → memoriza a parede (resolve os limites do mapa).</li>
+</ul>
+</div>
+
+<div class="avoid">
+<h2>6. Combate (escolhido por dados — campeão do torneio)</h2>
+<p>Simulador free-for-all + liga com vários perfis (+ random). Estratégia "<b>abutre</b>": <b>Aspirador</b> (apanha curas/cofres), <b>Esquiva</b> da densidade inimiga, e <b>remate</b> (abate de graça rivais com ≤15 HP). Medido a 200-500 seeds: <b>melhor do campo (~6.14/8, ~37% de 1.ºs lugares)</b> e melhor média 1v1. Tentar "melhorar à mão" (gatar a esquiva) <b>piorou</b> → revertido (medir antes de crer).</p>
+</div>
+
+<div class="avoid">
+<h2 class="ml">7. Machine Learning — Q-Learning híbrido (a masterclass)</h2>
+<p>Não parámos na heurística: construímos <b>RL autónomo 100% local</b> (sem API), a treinar por self-play nos simuladores rápidos.</p>
+<ul>
+<li><b>Híbrido:</b> o ML decide a <b>TÁTICA</b> (Agressividade / Esquiva / Recuo-cura / Ignorar); a <b>execução</b> fica no BFS afinado. Estado de combate compacto; recompensa "abutre" + por colocação. Grid Search <b>multithreaded</b>.</li>
+<li><b>Resultado honesto:</b> Q puro 4.73 → híbrido 5.48 → +colocação 5.71 → V3 (visão) <b>5.82/8</b> (500 seeds). O combo (<b>6.06</b>) mantém ~0.25 de vantagem.</li>
+</ul>
+<div class="win"><b>A lição que impressiona:</b> o Grid Search a <b>80 seeds</b> deu 6.14 (parecia vitória!); re-medimos a <b>500 seeds</b> → 5.82. Era o <b>viés do vencedor</b> — e tivemos o reflexo de verificar. <b>Decisão:</b> combo no torneio (robusto, BFS perfeito), ML como prova de domínio.</div>
+</div>
+
+<div class="avoid">
+<h2>8. Resiliência a falhas</h2>
+<p>Blocos <b>try-catch</b> robustos: falha de rede → null e o ciclo recupera no turno seguinte (nunca rebenta). <b>Thread.sleep(400 ms)</b> evita o anti-flood. O agente nunca congela sobre um cofre (trata-o uma vez e segue).</p>
+</div>
+
+<div class="avoid">
+<h2>9. Números para citar</h2>
+<div class="num">
+<ul style="margin-bottom:0">
+<li><b>Navegação:</b> guloso 6/30 → otimizado <b>30/30</b> cenários; deslocamento aos saltos <b>~3,9× mais rápido</b>.</li>
+<li><b>Combate:</b> <b>melhor do campo (~6.14/8)</b> em battle royale, medido a centenas de seeds (anti-viés-do-vencedor).</li>
+<li><b>RAG:</b> cofres abertos <b>AO VIVO</b> no servidor real (chave correta, +HP).</li>
+<li><b>ML:</b> Q-Learning de 4.73 → <b>5.82/8</b>; viés do vencedor detetado e corrigido (80 vs 500 seeds).</li>
+<li><b>Qualidade:</b> <b>39 testes JUnit verdes</b>; ~60 commits progressivos; autoria equilibrada Carlos/Afonso.</li>
+</ul>
+</div>
+</div>
+
+<div class="avoid qa">
+<h2>10. Perguntas prováveis do professor (e respostas)</h2>
+<h3>P: Porque esta arquitetura e não tudo no main?</h3>
+<p>R: SRP — evita a penalização da Classe Deus; cada classe testa-se e mantém-se sozinha.</p>
+<h3>P: Explica o RAG em duas frases.</h3>
+<p>R: Vetorizamos manual e enigma, achamos a secção mais parecida por cossenos e damos esse contexto ao LLM com um prompt rígido para devolver só a chave.</p>
+<h3>P: Porque temperatura 0 e ChatML?</h3>
+<p>R: Temperatura 0 = saída determinista (sem inventar); ChatML em Java dá controlo total e força o modelo a começar pela chave.</p>
+<h3>P: Como evitam andar em círculos / bater nas paredes?</h3>
+<p>R: Exploração por fronteiras ciente do radar (vamos à célula nova mais próxima por BFS) + filtro de colisões que remove movimentos para paredes conhecidas.</p>
+<h3>P: Como decidem lutar ou fugir?</h3>
+<p>R: Por torneio simulado medido: estratégia abutre (apanhar curas, evitar densidade, rematar fracos) é a melhor do campo — não atacamos sem vantagem.</p>
+<h3>P: Construíram ML — porque não é ele o bot do torneio?</h3>
+<p>R: Medimos: a heurística com BFS é mais forte e 100% fiável; o RL tabular, em tempo de treino realista, chega perto (5.82) mas não a supera (6.06). Escolhemos por <b>dados</b>, não por moda.</p>
+<h3>P: O ML não serviu para nada, então?</h3>
+<p>R: Serviu de prova de domínio (RL, recompensas, estado, paralelismo) e de validação independente do combo — e revelou o viés do vencedor, que corrigimos.</p>
+<h3>P: Como sobrevive a falhas de rede / anti-flood?</h3>
+<p>R: try-catch que recupera no turno seguinte + Thread.sleep(400 ms); uma só chamada de servidor por turno.</p>
+</div>
+
+<div class="foot">Transparência IA: código desenvolvido com apoio de LLM (Claude), documentado (diário de bordo + auditorias individuais) — uso permitido e encorajado pelo enunciado. Cada elemento sabe explicar o código. &nbsp;·&nbsp; <b>Soundbite:</b> "Construímos os DOIS — heurística perita e agente RL — e deixámos os dados decidir quem entra na arena. O combo ganha; o ML prova que entendemos o problema a fundo."</div>
+
+</body>
+</html>
