@@ -21,6 +21,7 @@ public class TabelaQ {
 
     private final Map<String, double[]> q = new HashMap<>();
     private final int nAcoes;
+    private final double[] zeros;
     private final double alfa;   // taxa de aprendizagem
     private final double gama;   // fator de desconto (importância do futuro)
 
@@ -30,22 +31,29 @@ public class TabelaQ {
 
     public TabelaQ(int nAcoes, double alfa, double gama) {
         this.nAcoes = nAcoes;
+        this.zeros = new double[nAcoes];
         this.alfa = alfa;
         this.gama = gama;
     }
 
+    /** Linha para ESCRITA (cria se não existir) — só usada no treino (single-thread). */
     private double[] linha(String estado) {
         return q.computeIfAbsent(estado, k -> new double[nAcoes]);
     }
 
+    /** Linha para LEITURA (não muta o mapa) — segura para avaliação em paralelo. */
+    private double[] leitura(String estado) {
+        return q.getOrDefault(estado, zeros);
+    }
+
     /** Valor Q estimado de uma ação num estado (0 se nunca visto). */
     public double valor(String estado, int acao) {
-        return linha(estado)[acao];
+        return leitura(estado)[acao];
     }
 
     /** Melhor ação (argmax) entre as válidas; -1 se nenhuma for válida. */
     public int melhorAcao(String estado, boolean[] valida) {
-        double[] linha = linha(estado);
+        double[] linha = leitura(estado);
         int melhor = -1;
         double melhorValor = Double.NEGATIVE_INFINITY;
         for (int a = 0; a < nAcoes; a++) {
@@ -61,7 +69,7 @@ public class TabelaQ {
     public void atualizar(String s, int a, double r, String s2, boolean[] valida2) {
         double maxFuturo = 0;
         boolean algumValido = false;
-        double[] linha2 = linha(s2);
+        double[] linha2 = leitura(s2);
         for (int b = 0; b < nAcoes; b++) {
             if (valida2[b] && (!algumValido || linha2[b] > maxFuturo)) {
                 maxFuturo = linha2[b];

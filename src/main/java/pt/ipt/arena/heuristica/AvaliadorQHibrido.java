@@ -40,17 +40,10 @@ public class AvaliadorQHibrido implements AgenteQ {
     private static final int IGNORAR = 3;
     public static final int N_POSTURAS = 4;
 
-    // Pesos da recompensa (modo abutre).
-    private static final double PESO_HP = 1.0;
-    private static final double SOBREVIVER = 0.3;
-    private static final double ABATE = 40.0;
-    private static final double DANO_EM_MELEE = 15.0;
-    /** Peso da recompensa terminal por colocação (vencedor = PESO_COLOCACAO·(total−1)). */
-    private static final double PESO_COLOCACAO = 8.0;
-
     private final TabelaQ tabela;
     private final boolean treino;
     private final Random rng;
+    private final RecompensaQ rec;
     private double epsilon;
 
     // Execução: delega o movimento às regras já afinadas (mesma recolha do combo).
@@ -68,10 +61,15 @@ public class AvaliadorQHibrido implements AgenteQ {
     private int densidadeAnterior;
 
     public AvaliadorQHibrido(TabelaQ tabela, double epsilon, boolean treino, long seed) {
+        this(tabela, epsilon, treino, seed, RecompensaQ.omissao());
+    }
+
+    public AvaliadorQHibrido(TabelaQ tabela, double epsilon, boolean treino, long seed, RecompensaQ rec) {
         this.tabela = tabela;
         this.epsilon = epsilon;
         this.treino = treino;
         this.rng = new Random(seed);
+        this.rec = rec;
     }
 
     @Override
@@ -92,12 +90,12 @@ public class AvaliadorQHibrido implements AgenteQ {
 
         // Aprende com a transição anterior (recompensa abutre).
         if (treino && estadoAnterior != null) {
-            double r = (ctx.meuHp() - hpAnterior) * PESO_HP + SOBREVIVER;
+            double r = (ctx.meuHp() - hpAnterior) * rec.hp + rec.sobreviver;
             boolean abateu = agressaoSobreRematavel; // rematável + golpe = morte certa no simulador
             if (abateu) {
-                r += ABATE;
+                r += rec.abate;
             } else if (densidadeAnterior >= 2 && ctx.meuHp() < hpAnterior) {
-                r -= DANO_EM_MELEE; // apanhou dano numa mêlée sem matar
+                r -= rec.danoMelee; // apanhou dano numa mêlée sem matar
             }
             tabela.atualizar(estadoAnterior, acaoAnterior, r, estado, todas);
         }
@@ -124,7 +122,7 @@ public class AvaliadorQHibrido implements AgenteQ {
     @Override
     public void fimEpisodio(int colocacao, int total) {
         if (treino && estadoAnterior != null && acaoAnterior >= 0) {
-            double r = PESO_COLOCACAO * (total - 1 - colocacao); // 0 (último) .. PESO·(total-1) (1.º)
+            double r = rec.colocacao * (total - 1 - colocacao); // 0 (último) .. coloc·(total-1) (1.º)
             tabela.atualizarTerminal(estadoAnterior, acaoAnterior, r);
         }
     }
@@ -191,18 +189,44 @@ public class AvaliadorQHibrido implements AgenteQ {
         RoboRival perto = rivalMaisProximo(ctx, pos);
         int vantagem = perto == null ? 0 : (hp > perto.getHp() ? 1 : 2); // 0=sem rival,1=forte,2=fraco
         int densidade = ctx.rivais().isEmpty() ? 0 : (ctx.rivais().size() == 1 ? 1 : 2);
-        int curaConhecida = haCuraAlcancavel(ctx, memoria) ? 1 : 0;
-        int rematavel = haRematavelAdjacente(ctx) ? 1 : 0;
+        // Distância da cura mais próxima: 0=adjacente, 1=perto(≤5), 2=longe/nenhuma.
+        int distCura = patamar(distanciaCuraMaisProxima(ctx, memoria), 1, 5);
+        // Distância do inimigo: 0=corpo-a-corpo(≤1), 1=perto(≤4), 2=longe/nenhum.
+        int distInimigo = perto == null ? 2 : patamar(Bussola.manhattan(pos, perto.getPosicao()), 1, 4);
+        // "Posso abatê-lo este turno?" — o rival mais próximo morre de um golpe (≤15 HP).
+        int podeAbater = (perto != null && perto.getHp() <= 15) ? 1 : 0;
 
-        return patamarHp + "|" + vantagem + "|" + densidade + "|" + curaConhecida + "|" + rematavel;
+        return patamarHp + "|" + vantagem + "|" + densidade + "|" + distCura + "|" + distInimigo + "|" + podeAbater;
     }
 
-    private boolean haCuraAlcancavel(ContextoDecisao ctx, MemoriaHeuristica memoria) {
-        if (!ctx.alvos().isEmpty()) {
-            return true;
+    /** Distância em 3 patamares: 0=adjacente (≤adj), 1=perto (≤perto), 2=longe/nenhum (-1). */
+    private int patamar(int dist, int adj, int perto) {
+        if (dist < 0) {
+            return 2;
         }
-        return memoria != null
-                && (!memoria.getMapa().recursos().isEmpty() || !memoria.getMapa().cofres().isEmpty());
+        return dist <= adj ? 0 : (dist <= perto ? 1 : 2);
+    }
+
+    /** Distância de Manhattan à cura (recurso/cofre) mais próxima conhecida; -1 se nenhuma. */
+    private int distanciaCuraMaisProxima(ContextoDecisao ctx, MemoriaHeuristica memoria) {
+        Coordenada pos = ctx.minhaPosicao();
+        int melhor = -1;
+        for (Coordenada c : ctx.alvos()) {
+            melhor = menor(melhor, Bussola.manhattan(pos, c));
+        }
+        if (memoria != null) {
+            for (Coordenada c : memoria.getMapa().recursos()) {
+                melhor = menor(melhor, Bussola.manhattan(pos, c));
+            }
+            for (Coordenada c : memoria.getMapa().cofres()) {
+                melhor = menor(melhor, Bussola.manhattan(pos, c));
+            }
+        }
+        return melhor;
+    }
+
+    private int menor(int atual, int novo) {
+        return (atual < 0 || novo < atual) ? novo : atual;
     }
 
     private boolean haRematavelAdjacente(ContextoDecisao ctx) {
