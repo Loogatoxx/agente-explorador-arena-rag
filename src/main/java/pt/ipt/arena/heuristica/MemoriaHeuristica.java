@@ -2,6 +2,7 @@ package pt.ipt.arena.heuristica;
 
 import pt.ipt.arena.modelo.Acao;
 import pt.ipt.arena.modelo.Coordenada;
+import pt.ipt.arena.modelo.RoboRival;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -33,6 +34,7 @@ public class MemoriaHeuristica {
     private final Set<String> cofresResolvidos = new HashSet<>();
     private final Set<String> cofresTentados = new HashSet<>();
     private final Set<String> celulasVistas = new HashSet<>();
+    private final Map<String, Integer> hpRivais = new HashMap<>();
     private final Deque<Acao> filaAcoesPlaneadas = new ArrayDeque<>();
     private final MapaDescoberto mapa = new MapaDescoberto();
 
@@ -117,6 +119,34 @@ public class MemoriaHeuristica {
     /** Cópia das células já vistas pelo radar (chaves "x,y"). */
     public Set<String> celulasVistas() {
         return new HashSet<>(celulasVistas);
+    }
+
+    // ----- HP dos rivais conhecidos (para a conservação em PvP) -----
+
+    /** Regista o HP atual de cada rival visível (memoriza o último valor visto). */
+    public void atualizarHpRivais(List<RoboRival> rivais) {
+        if (rivais == null) {
+            return;
+        }
+        for (RoboRival r : rivais) {
+            if (r != null && r.getId() != null) {
+                hpRivais.put(r.getId(), r.getHp());
+            }
+        }
+    }
+
+    /** True se já vimos algum rival nesta partida (distingue PvP de modo solo). */
+    public boolean viuAlgumRival() {
+        return !hpRivais.isEmpty();
+    }
+
+    /** Maior HP conhecido entre os rivais já vistos (Integer.MAX_VALUE se nenhum). */
+    public int getMaxHpInimigoConhecido() {
+        int max = Integer.MIN_VALUE;
+        for (int hp : hpRivais.values()) {
+            max = Math.max(max, hp);
+        }
+        return max == Integer.MIN_VALUE ? Integer.MAX_VALUE : max;
     }
 
     /** Células intransitáveis para o pathfinding: paredes conhecidas + lista negra. */

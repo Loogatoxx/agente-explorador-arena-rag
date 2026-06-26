@@ -46,6 +46,7 @@ public class MotorHeuristico {
                 new AvaliadorAspirador(),
                 new AvaliadorEsquiva(),
                 new AvaliadorAlvo(),
+                new AvaliadorConservacao(),
                 new AvaliadorCanto(),
                 new AvaliadorExploracao());
     }
@@ -182,6 +183,10 @@ public class MotorHeuristico {
 
             // E2 — Contexto do turno (pré-computado uma vez).
             ContextoDecisao ctx = ContextoDecisao.construir(percecao, memoria, idRobo);
+
+            // E2b — Memoriza o HP dos rivais vistos (alimenta a conservação em PvP
+            //        e marca a partida como combate, não modo solo).
+            memoria.atualizarHpRivais(ctx.rivais());
 
             // E3 — Colisões (uma só vez, partilhadas por toda a cadeia).
             List<Bussola> validas = filtroColisoes.direcoesValidas(ctx, memoria);
