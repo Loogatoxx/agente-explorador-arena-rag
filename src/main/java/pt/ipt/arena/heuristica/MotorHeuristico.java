@@ -39,14 +39,28 @@ public class MotorHeuristico {
     private final List<AvaliadorAcao> cadeia;
     private final int raioVisao;
 
+    /**
+     * Margem de conservação por omissão. NEGATIVA (-150) = estratégia "tartaruga":
+     * em PvP, sem rival no radar e sem loot conhecido por apanhar, fica parado a
+     * conservar HP MESMO um pouco atrás — andar à toa só perde a vida, e deixar os
+     * agressivos entre-matarem-se ganha. Escolhido por benchmark (6.2 → ~6.8/8,
+     * 70% de 1.ºs lugares). Acima de 150 HP atrás do líder, volta a procurar loot.
+     */
+    public static final int MARGEM_CONSERVACAO = -150;
+
     /** Cadeia "abutre completo" — a configuração otimizada por omissão. */
     private static List<AvaliadorAcao> cadeiaOtimizada() {
+        return cadeiaOtimizada(MARGEM_CONSERVACAO);
+    }
+
+    /** Igual, mas com margem de conservação configurável (para benchmark de variantes). */
+    private static List<AvaliadorAcao> cadeiaOtimizada(int margemConservacao) {
         return List.of(new AvaliadorReflexos(),
                 new AvaliadorBatalha(),
                 new AvaliadorAspirador(),
                 new AvaliadorEsquiva(),
                 new AvaliadorAlvo(),
-                new AvaliadorConservacao(),
+                new AvaliadorConservacao(margemConservacao),
                 new AvaliadorCanto(),
                 new AvaliadorExploracao());
     }
@@ -76,6 +90,12 @@ public class MotorHeuristico {
      * explícito — usado pelo benchmark de navegação para afinar o passo de
      * exploração (saltos do varrimento).
      */
+    /** Combo com uma margem de conservação à medida (benchmark de variantes). */
+    public static MotorHeuristico comConservacaoMargem(int margem) {
+        return new MotorHeuristico("combo", new MemoriaHeuristica(), new FiltroColisoes(),
+                cadeiaOtimizada(margem));
+    }
+
     public static MotorHeuristico comExploracaoRaio(String idRobo, int raioVisao) {
         return new MotorHeuristico(idRobo, new MemoriaHeuristica(), new FiltroColisoes(),
                 cadeiaOtimizada(), raioVisao);

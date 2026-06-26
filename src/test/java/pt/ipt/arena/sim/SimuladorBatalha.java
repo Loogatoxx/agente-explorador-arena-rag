@@ -441,6 +441,39 @@ public final class SimuladorBatalha {
     }
 
     /**
+     * Diagnóstico: corre UMA partida e devolve o desfecho do NOSSO bot:
+     * {@code [colocacao, turnoDeMorte (-1 se sobreviveu), hpFinal, vivosQuandoMorri]}.
+     * Serve para perceber PORQUE perdemos (morte cedo em mêlée vs HP baixo no fim).
+     */
+    public static int[] analisarNosso(java.util.function.Supplier<MotorHeuristico> nosso,
+                                      List<java.util.function.Supplier<MotorHeuristico>> adversarios,
+                                      long seed, int n, int nRecursos, int nCofres) {
+        int k = adversarios.size() + 1;
+        SimuladorBatalha arena = new SimuladorBatalha(seed, n, nRecursos, nCofres);
+        List<int[]> starts = arena.posicoesIniciais(k, seed);
+        List<Bot> bots = new ArrayList<>();
+        Bot meu = new Bot("NOSSO", nosso.get(), starts.get(0)[0], starts.get(0)[1]);
+        bots.add(meu);
+        for (int a = 0; a < adversarios.size(); a++) {
+            int[] st = starts.get(a + 1);
+            bots.add(new Bot("adv" + a, adversarios.get(a).get(), st[0], st[1]));
+        }
+        List<Bot> ranking = arena.jogar(bots);
+        int colocacao = ranking.indexOf(meu);
+        int turnoMorte = meu.vivo ? -1 : meu.morteTurno;
+        // Quantos rivais estavam vivos no turno em que morremos (densidade da ameaça).
+        int vivosNaMorte = 0;
+        if (!meu.vivo) {
+            for (Bot b : bots) {
+                if (b != meu && b.morteTurno > meu.morteTurno) {
+                    vivosNaMorte++;
+                }
+            }
+        }
+        return new int[]{colocacao, turnoMorte, meu.hp, vivosNaMorte};
+    }
+
+    /**
      * Corre UM episódio de treino de Q-Learning: o agente {@code aq} (1 bot)
      * joga em free-for-all contra o {@code campo}, reutilizando toda a física do
      * simulador. Trata o início/fim de episódio (recompensa terminal) e devolve a

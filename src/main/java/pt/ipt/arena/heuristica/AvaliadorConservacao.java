@@ -25,6 +25,21 @@ import java.util.Optional;
  */
 public class AvaliadorConservacao implements AvaliadorAcao {
 
+    /**
+     * Margem de HP exigida sobre o inimigo mais forte para começar a conservar.
+     * 0 = conserva quando estritamente à frente; negativa = conserva mesmo um
+     * pouco atrás (mais defensivo, deixa de sangrar HP a andar).
+     */
+    private final int margemVantagem;
+
+    public AvaliadorConservacao() {
+        this(0);
+    }
+
+    public AvaliadorConservacao(int margemVantagem) {
+        this.margemVantagem = margemVantagem;
+    }
+
     @Override
     public Optional<Acao> avaliar(ContextoDecisao ctx, MemoriaHeuristica memoria, List<Bussola> validas) {
         if (validas.isEmpty()) {
@@ -38,9 +53,9 @@ public class AvaliadorConservacao implements AvaliadorAcao {
         if (!ctx.rivais().isEmpty()) {
             return Optional.empty();
         }
-        // Sem vantagem clara sobre o inimigo mais forte conhecido → explora
-        // (procura loot/curas para ganhar vantagem), não conserva.
-        if (ctx.meuHp() <= memoria.getMaxHpInimigoConhecido()) {
+        // Sem a margem de vantagem exigida sobre o inimigo mais forte conhecido →
+        // explora (procura loot/curas), não conserva.
+        if (ctx.meuHp() <= memoria.getMaxHpInimigoConhecido() + margemVantagem) {
             return Optional.empty();
         }
 
