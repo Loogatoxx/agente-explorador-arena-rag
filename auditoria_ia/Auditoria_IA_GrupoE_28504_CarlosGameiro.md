@@ -402,4 +402,27 @@ torneio, ML = masterclass para a oral**, e pedi a documentação final.
   sério. E saber **escolher a ferramenta certa** (combo no torneio, ML como prova)
   vale mais do que forçar o ML a ganhar.
 
+---
+
+## Interação (os dois) — Conservação de HP em PvP (2026-06-26)
+
+### O nosso Prompt
+Depois de combater o professor ao vivo, vimos que o robô gastava HP a andar à toa
+quando o inimigo estava longe e nós em vantagem — perdíamos a liderança. Pedimos
+para, sem inimigo perto e em vantagem, ficar parado; mas em SOLO continuar a
+procurar e abrir todos os cofres. (Um outro agente, "Antigravity", já tinha
+tentado isto mas campava demais, mesmo em solo.)
+
+### A Resposta da IA
+- Reimplementou de forma limpa: novo `AvaliadorConservacao` colocado DEPOIS do
+  Alvo (apanha o loot conhecido primeiro). Só campa em PvP (já viu rival), sem
+  rival no radar e com mais HP que o inimigo mais forte conhecido — fica parado
+  contra uma parede (movimento bloqueado = 0 HP). Em SOLO nunca dispara.
+- Aproveitou a boa ideia do Antigravity (memorizar o HP dos rivais) mas bem
+  colocada, e MEDIU: solo intacto (30/30); battle royale 6.14 -> 6.327 e 1v1
+  médio 63.5% -> 68.3%. 42 testes verdes.
+
+### O que retivemos
+- Cada movimento custa HP: em vantagem, parar é jogar. E separar solo de PvP por
+  "já vimos um rival" é simples e robusto. Medir antes de adotar (de novo).
 

@@ -928,3 +928,28 @@ está correta (eixos validados ao vivo); o bug era só de desenho.
 - Espelharam-se os **dois eixos** no render (`px`/`py` via `lado-1-gx`/`lado-1-gy`)
   para a orientação do painel bater certo com a arena real. Mudança só de UI,
   sem impacto na navegação. Compila; testes verdes.
+
+## 2026-06-26 — Etapa: Conservação de HP em PvP (camp inteligente)
+
+**Prompt (Afonso e Carlos):** ao combater o professor, vimos que o robô anda
+depressa demais e perde HP à toa quando o inimigo está longe e nós temos a
+vantagem — perdíamos a liderança. Queríamos que, sem inimigo por perto e em
+vantagem, ficasse parado. Importante: em SOLO tem de continuar a procurar/abrir
+todos os cofres (não campar como em PvP).
+
+**Contexto:** o agente "Antigravity" tentou isto antes mas campava demais (mesmo
+em solo e com loot por apanhar), pelo que o robô perdia HP no canto e era abatido.
+
+**O que se fez (reimplementação limpa):**
+- Novo `AvaliadorConservacao`, colocado DEPOIS do `AvaliadorAlvo` (logo, todo o
+  loot conhecido é apanhado primeiro). Só campa quando: (1) já vimos um rival
+  (é PvP — em SOLO nunca dispara), (2) não há rival no radar, (3) temos mais HP
+  que o inimigo mais forte conhecido. Fica parado encostado a uma parede
+  (movimento bloqueado = 0 HP), aproximando-se da parede mais próxima se preciso.
+- A `MemoriaHeuristica` passa a guardar o HP dos rivais vistos
+  (`getMaxHpInimigoConhecido`, `viuAlgumRival`).
+
+**Medição:** navegação SOLO intacta (**30/30**); battle royale do combo
+**6.14 → 6.327** (44% de 1.os lugares) e **1v1 médio 63.5% → 68.3%**. 42 testes
+verdes (+3). A boa intuição do Antigravity, agora bem colocada e medida.
+
