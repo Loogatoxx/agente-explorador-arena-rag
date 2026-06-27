@@ -19,10 +19,31 @@ import java.util.Optional;
  */
 public class AvaliadorEsquiva implements AvaliadorAcao {
 
+    /** Só foge se um rival estiver a esta distância (Manhattan) ou menos. */
+    private final int raioAmeaca;
+
+    public AvaliadorEsquiva() {
+        this(Integer.MAX_VALUE); // por omissão: foge de qualquer rival no radar (archetipos)
+    }
+
+    public AvaliadorEsquiva(int raioAmeaca) {
+        this.raioAmeaca = raioAmeaca;
+    }
+
     @Override
     public Optional<Acao> avaliar(ContextoDecisao ctx, MemoriaHeuristica memoria, List<Bussola> validas) {
         List<RoboRival> rivais = ctx.rivais();
         if (rivais.isEmpty() || validas.isEmpty()) {
+            return Optional.empty();
+        }
+        // Só foge de uma ameaça PRÓXIMA (≤ raioAmeaca). Um rival longe não nos faz
+        // mexer — evita o gauche-droite que sangra HP a kitar quem está longe.
+        Coordenada agente = ctx.minhaPosicao();
+        int maisPerto = Integer.MAX_VALUE;
+        for (RoboRival r : rivais) {
+            maisPerto = Math.min(maisPerto, Bussola.manhattan(agente, r.getPosicao()));
+        }
+        if (maisPerto > raioAmeaca) {
             return Optional.empty();
         }
 

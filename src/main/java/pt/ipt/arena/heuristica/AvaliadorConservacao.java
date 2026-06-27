@@ -2,6 +2,7 @@ package pt.ipt.arena.heuristica;
 
 import pt.ipt.arena.modelo.Acao;
 import pt.ipt.arena.modelo.Coordenada;
+import pt.ipt.arena.modelo.RoboRival;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,12 +33,20 @@ public class AvaliadorConservacao implements AvaliadorAcao {
      */
     private final int margemVantagem;
 
+    /** Só foge se um rival estiver a esta distância (Manhattan) ou menos; senão fica IMÓVEL. */
+    private final int raioAmeaca;
+
     public AvaliadorConservacao() {
-        this(0);
+        this(0, 2);
     }
 
     public AvaliadorConservacao(int margemVantagem) {
+        this(margemVantagem, 2);
+    }
+
+    public AvaliadorConservacao(int margemVantagem, int raioAmeaca) {
         this.margemVantagem = margemVantagem;
+        this.raioAmeaca = raioAmeaca;
     }
 
     @Override
@@ -49,8 +58,10 @@ public class AvaliadorConservacao implements AvaliadorAcao {
         if (!memoria.viuAlgumRival()) {
             return Optional.empty();
         }
-        // Rival à vista → deixa os avaliadores de combate decidir.
-        if (!ctx.rivais().isEmpty()) {
+        // Rival a ≤ raioAmeaca → ameaça imediata: deixa o combate/fuga decidir.
+        // (Um rival LONGE — 3-4 casas — já NÃO nos faz mexer: ficamos imóveis em
+        // vez de andar gauche-droite a sangrar HP a fugir de quem está longe.)
+        if (rivalProximo(ctx) <= raioAmeaca) {
             return Optional.empty();
         }
         // Sem a margem de vantagem exigida sobre o inimigo mais forte conhecido →
@@ -78,6 +89,16 @@ public class AvaliadorConservacao implements AvaliadorAcao {
             }
         }
         return Optional.empty();
+    }
+
+    /** Distância de Manhattan ao rival mais próximo; Integer.MAX_VALUE se nenhum. */
+    private int rivalProximo(ContextoDecisao ctx) {
+        Coordenada pos = ctx.minhaPosicao();
+        int md = Integer.MAX_VALUE;
+        for (RoboRival r : ctx.rivais()) {
+            md = Math.min(md, Bussola.manhattan(pos, r.getPosicao()));
+        }
+        return md;
     }
 
     /** Parede conhecida (mapa acumulado) mais próxima por Manhattan; null se nenhuma. */

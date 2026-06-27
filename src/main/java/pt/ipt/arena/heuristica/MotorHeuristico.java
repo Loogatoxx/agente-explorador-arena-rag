@@ -60,13 +60,20 @@ public class MotorHeuristico {
      */
     public static final double CUSTO_LOOT = 2.0;
 
+    /**
+     * Raio de ameaça (Manhattan): só fugimos de um rival a ≤ 2 casas. Mais longe,
+     * ficamos IMÓVEIS (0 HP) em vez de andar gauche-droite a kitar quem está longe
+     * — era esse desperdício de HP que nos matava no fim das partidas.
+     */
+    public static final int RAIO_AMEACA = 2;
+
     /** Igual, mas com margem de conservação configurável (para benchmark de variantes). */
     private static List<AvaliadorAcao> cadeiaOtimizada(int margemConservacao) {
         return List.of(new AvaliadorReflexos(),
                 new AvaliadorBatalha(),
                 new AvaliadorLootValioso(CUSTO_LOOT),
-                new AvaliadorEsquiva(),
-                new AvaliadorConservacao(margemConservacao),
+                new AvaliadorEsquiva(RAIO_AMEACA),
+                new AvaliadorConservacao(margemConservacao, RAIO_AMEACA),
                 new AvaliadorCanto(),
                 new AvaliadorExploracao());
     }

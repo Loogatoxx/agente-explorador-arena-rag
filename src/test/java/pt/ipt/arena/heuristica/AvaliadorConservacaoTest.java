@@ -62,6 +62,20 @@ class AvaliadorConservacaoTest {
     }
 
     @Test
+    void rivalProximoNaoCampaDeixaFugir() {
+        MemoriaHeuristica mem = new MemoriaHeuristica();
+        mem.atualizarHpRivais(List.of(rival(150)));
+        // Rival a 2 casas (5,7) do agente (5,5), parede a Norte (5,4).
+        Percecao p = gson.fromJson(
+                "{\"game_started\":true,\"o_meu_estado\":{\"x\":5,\"y\":5,\"hp\":200},"
+                        + "\"objetos_fixos\":[{\"x\":5,\"y\":4}],"
+                        + "\"outros_robots\":[{\"id\":\"r1\",\"x\":5,\"y\":7,\"hp\":150}]}", Percecao.class);
+        ContextoDecisao c = ContextoDecisao.construir(p, mem, "eu");
+        assertTrue(av.avaliar(c, mem, validas(c, mem)).isEmpty(),
+                "com um rival a ≤2 casas NÃO campa — deixa o combate/fuga decidir");
+    }
+
+    @Test
     void emPvpSemVantagemNaoCampa() {
         MemoriaHeuristica mem = new MemoriaHeuristica();
         mem.atualizarHpRivais(List.of(rival(250))); // inimigo mais forte (250 > nós 200)
