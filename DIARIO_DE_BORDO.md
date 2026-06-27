@@ -1000,3 +1000,18 @@ fixo, teto 250).
   médio **84,7% → 87,8%**. 45 testes verdes (+3). A medição da cura tornou-se um
   ganho mensurável.
 
+## 2026-06-26 — Etapa: anti-cerco (testado e REJEITADO) + vídeos de replay
+
+**Prompt (Carlos):** testar o anti-encerclamento e, no fim, gerar um vídeo de uma
+simulação ganha e outra perdida para ver tudo o que o robô faz.
+
+- **Anti-cerco** (`AvaliadorAntiCerco`): fugir para o espaço ABERTO (mais saídas)
+  em vez de só maximizar a distância. Benchmark (800 seeds): **piora** com peso
+  significativo (peso 2 → 6.66; peso 4 → 6.56); a peso ~0 é igual à esquiva atual.
+  **Rejeitado** — a fuga distância-máxima (esquiva) já é a melhor. Guardado como
+  variante medida (rigor para a oral). Mais um caso de "mexer no combate piora".
+- **Vídeos:** `GravadorCombate` grava replays e um script Python/Pillow gera GIFs
+  animados: `docs/replay_vitoria.gif` (seed 1, 1.º lugar) e `docs/replay_derrota.gif`
+  (seed 8, 5.º lugar, morte t124). Mostram cada movimento, HP de cada bot e o loot.
+- 45 testes verdes.
+

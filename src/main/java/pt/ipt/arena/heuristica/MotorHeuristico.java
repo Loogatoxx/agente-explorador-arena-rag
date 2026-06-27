@@ -118,6 +118,18 @@ public class MotorHeuristico {
                         new AvaliadorExploracao()));
     }
 
+    /** Combo atual mas com fuga ANTI-CERCO (peso de abertura) em vez da esquiva simples. */
+    public static MotorHeuristico comAntiCerco(double pesoAbertura) {
+        return new MotorHeuristico("combo", new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(new AvaliadorReflexos(),
+                        new AvaliadorBatalha(),
+                        new AvaliadorLootValioso(CUSTO_LOOT),
+                        new AvaliadorAntiCerco(pesoAbertura),
+                        new AvaliadorConservacao(MARGEM_CONSERVACAO),
+                        new AvaliadorCanto(),
+                        new AvaliadorExploracao()));
+    }
+
     /**
      * Combo com margem de COMBATE e de CONSERVAÇÃO à medida (benchmark). Margem de
      * combate mais baixa = ataca/ripostar mais cedo (converte a vantagem de HP da
