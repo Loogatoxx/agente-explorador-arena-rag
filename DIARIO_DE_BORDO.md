@@ -987,3 +987,16 @@ visual para analisar.
   clara — seed 12, 5.º, morte t114 — e 1 vitória), bot azul = NOSSO, para análise
   visual. Relatório: `docs/Relatorio_Porque_Perdemos.md`. 42 testes verdes.
 
+## 2026-06-26 — Etapa: cofre-timing implementado (loot consciente do valor)
+
+**Prompt (Carlos):** continuar a investigação a partir da constatação (cofre = +100
+fixo, teto 250).
+
+- Novo `AvaliadorLootValioso`: persegue loot só se `min(recompensa, 250-HP) >
+  dist*2` — **só em PvP** (em SOLO fica guloso: missão = todos os cofres). Substitui
+  Aspirador+Alvo no combo.
+- Head-to-head 800 seeds (2 corridas): bate o combo anterior por +0.18 de forma
+  consistente. Final: nav solo **30/30** (rápido), battle royale **~6.9/8**, 1v1
+  médio **84,7% → 87,8%**. 45 testes verdes (+3). A medição da cura tornou-se um
+  ganho mensurável.
+

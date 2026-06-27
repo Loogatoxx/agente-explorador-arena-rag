@@ -53,13 +53,19 @@ public class MotorHeuristico {
         return cadeiaOtimizada(MARGEM_CONSERVACAO);
     }
 
+    /**
+     * Custo de HP por passo exigido para o loot valer a pena (gate de valorização,
+     * só em PvP). Escolhido por benchmark: battle royale 6.7 → ~6.9/8 (+2-3% de 1.ºs)
+     * sem perder a navegação solo (30/30).
+     */
+    public static final double CUSTO_LOOT = 2.0;
+
     /** Igual, mas com margem de conservação configurável (para benchmark de variantes). */
     private static List<AvaliadorAcao> cadeiaOtimizada(int margemConservacao) {
         return List.of(new AvaliadorReflexos(),
                 new AvaliadorBatalha(),
-                new AvaliadorAspirador(),
+                new AvaliadorLootValioso(CUSTO_LOOT),
                 new AvaliadorEsquiva(),
-                new AvaliadorAlvo(),
                 new AvaliadorConservacao(margemConservacao),
                 new AvaliadorCanto(),
                 new AvaliadorExploracao());
@@ -94,6 +100,22 @@ public class MotorHeuristico {
     public static MotorHeuristico comConservacaoMargem(int margem) {
         return new MotorHeuristico("combo", new MemoriaHeuristica(), new FiltroColisoes(),
                 cadeiaOtimizada(margem));
+    }
+
+    /**
+     * Combo com atração de loot CONSCIENTE DA VALORIZAÇÃO (substitui Aspirador+Alvo
+     * por {@link AvaliadorLootValioso}). {@code custo} = HP exigido por passo para
+     * valer a pena ir buscar um loot. Benchmark do "cofre segundo o seu valor".
+     */
+    public static MotorHeuristico comLootValioso(double custo) {
+        return new MotorHeuristico("combo", new MemoriaHeuristica(), new FiltroColisoes(),
+                List.of(new AvaliadorReflexos(),
+                        new AvaliadorBatalha(),
+                        new AvaliadorLootValioso(custo),
+                        new AvaliadorEsquiva(),
+                        new AvaliadorConservacao(MARGEM_CONSERVACAO),
+                        new AvaliadorCanto(),
+                        new AvaliadorExploracao()));
     }
 
     /**

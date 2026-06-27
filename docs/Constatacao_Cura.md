@@ -31,3 +31,12 @@ benchmarks estão certos.
 ```
 java -cp "target/classes:target/test-classes:$GSON" pt.ipt.arena.DiagnosticoCura <SALA> diagCura
 ```
+
+## Implementado e medido (cofre-timing)
+
+`AvaliadorLootValioso` (substitui Aspirador+Alvo no combo): persegue um loot só se
+`min(recompensa, 250-HP) > distancia * 2` — mas **só em PvP**; em SOLO continua
+guloso (abre todos os cofres, 30/30 rápido). Resultado: **battle royale ~6.7 →
+~6.9/8** e **1v1 médio 84,7% → 87,8%**, sem perder a navegação solo. A medição da
+cura virou ganho real.
+
