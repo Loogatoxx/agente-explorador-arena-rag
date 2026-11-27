@@ -1,62 +1,62 @@
-# Agente Explorador na Arena 3D RAG
+# 🤖 Explorer Agent for the 3D RAG Arena
 
-Projeto Final da unidade curricular de **Programação III** (IPT).
+**An autonomous Java agent that acts as the "brain" of an explorer robot in the 3D RAG Arena.**
+Final project for the **Programming III** course at the Polytechnic Institute of Tomar (IPT), built by [Carlos Gameiro](https://github.com/Loogatoxx) and [Afonso Trindade](https://github.com/Afonso4538).
 
-Cliente autónomo em **Java** que atua como o "cérebro" cognitivo de um robô
-explorador na **Arena 3D RAG**. O agente liga-se por **REST API** ao servidor
-central da Arena, percebe o mundo (radar/telemetria), decide de forma
-heurística o próximo movimento e resolve enigmas dos Terminais de Plasma
-através de um **pipeline RAG** executado num motor de IA local (**Ollama**).
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-build-C71A36?style=flat-square&logo=apachemaven&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-local%20RAG-000000?style=flat-square&logo=ollama&logoColor=white)
 
-## Arquitetura (Topologia Híbrida)
-- **Servidor Central (Cloud / OVH)** — árbitro do "mundo físico" (não é nosso).
-- **Cliente Autónomo (Java, local)** — este repositório; o sistema nervoso do robô.
-- **Motor de IA (Ollama, local, porta 11434)** — embeddings e geração (LLM).
+🇵🇹 [Versão portuguesa](README.pt.md)
 
-## Estrutura de classes (POO / SRP)
-| Classe | Responsabilidade |
-|--------|------------------|
-| `AgenteExplorador` | Orquestrador do ciclo Sense-Think-Act (Main). |
-| `ArenaClient` | Comunicação HTTP REST com a Arena (registo, perceção, ação, unlock). |
-| `OllamaClient` | Comunicação com a IA local (embeddings + geração RAG). |
-| `DocumentoVetorial` | Modelo de dados: chunk de texto + vetor de embeddings. |
-| `PainelMapaCalor` | Interface visual (Swing/Graphics2D): telemetria + mapa de calor. |
 
-## Tecnologias
-- Java 17+ (`java.net.http.HttpClient`)
-- Maven
-- Gson 2.10.1 (JSON)
-- Ollama: `nomic-embed-text` (embeddings) + `qwen2.5-coder:0.5b-instruct` (LLM)
+The agent connects to the Arena's central server through a **REST API**. It perceives the world (radar, telemetry), picks its next move with heuristics, and solves the Plasma Terminal puzzles with a **RAG pipeline** running on a local AI engine (**Ollama**).
 
-## Pré-requisitos
-1. JDK 17 ou superior.
-2. Ollama instalado e a correr (`http://localhost:11434`).
-3. Modelos descarregados:
-   ```
+![Telemetry dashboard](docs/dashboard.png)
+
+*The local telemetry dashboard: a radar centred on the agent, a heat map of visited cells, walls, resources, vaults and rivals. This render uses a sample game state.*
+
+## Architecture (hybrid topology)
+
+- **Central server (cloud / OVH):** the referee of the "physical world" (not ours)
+- **Autonomous client (Java, local):** this repository, the robot's nervous system
+- **AI engine (Ollama, local, port 11434):** embeddings and generation
+
+| Class | Responsibility |
+|---|---|
+| `AgenteExplorador` | Orchestrates the Sense → Think → Act loop (main) |
+| `ArenaClient` | HTTP REST communication with the Arena (register, perceive, act, unlock) |
+| `OllamaClient` | Local AI communication (embeddings + RAG generation) |
+| `DocumentoVetorial` | Data model: a text chunk and its embedding vector |
+| `PainelMapaCalor` | Swing / Graphics2D dashboard: telemetry and heat map |
+
+## Tech
+
+Java 17+ (`java.net.http.HttpClient`) · Maven · Gson 2.10.1 · Ollama with `nomic-embed-text` (embeddings) and `qwen2.5-coder:0.5b-instruct` (LLM)
+
+## Getting started
+
+1. JDK 17 or later
+2. Ollama running on `http://localhost:11434`
+3. The models:
+   ```bash
    ollama pull qwen2.5-coder:0.5b-instruct-q4_K_M
    ollama pull nomic-embed-text
    ```
 
-## Interface (PainelMapaCalor)
-Dashboard de telemetria local em Java Swing: radar centrado no agente, mapa de
-calor das células visitadas, paredes, recursos, cofres e rivais, mais o estado
-(posição, HP, contagens).
+## Optimisation & benchmarks
 
-![Dashboard de telemetria](docs/dashboard.png)
+Simulation tools live in `src/test/.../sim/` and are not part of the agent:
 
-*(render ilustrativo com um estado de jogo de exemplo.)*
+- `BenchmarkNavegacao` / `BenchmarkEvolucao` score navigation version by version
+- `SimuladorBatalha` runs a free-for-all league of combat strategies
+- `OtimizadorLocal` brute-forces thousands of duels locally and writes a JSON report with the best strategy
 
-## Otimização e benchmarks (local, opcional)
-Ferramentas de simulação em `src/test/.../sim/` (não fazem parte do agente):
-- `BenchmarkNavegacao` / `BenchmarkEvolucao` — pontuam a navegação por versão.
-- `SimuladorBatalha` — liga free-for-all (torneio de estratégias de combate).
-- `OtimizadorLocal` — força bruta no teu PC: corre milhares de duelos e escreve
-  um relatório JSON com a melhor estratégia. Exemplo (após `mvn test-compile`):
-  ```
-  java -cp "target/test-classes:target/classes:$(find ~/.m2 -name 'gson-2.10.1.jar' | head -1)" \
-       pt.ipt.arena.sim.OtimizadorLocal 100 otimizador_resultado.json
-  ```
+The analysis reports (combat, Q-learning, hybrid ML, and an honest "why we lost") are in [`docs/`](docs/).
 
-## Documentação do projeto
-- `DIARIO_DE_BORDO.md` — histórico cronológico completo do desenvolvimento.
-- `auditoria_ia/` — auditoria individual do uso de IA (prompts e respostas).
+## Project documentation
+
+- [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md): the complete development log
+- [`auditoria_ia/`](auditoria_ia/): each author's audit of their AI usage (prompts and answers)
+
+Documentation and code comments are in Portuguese.
